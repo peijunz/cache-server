@@ -30,17 +30,21 @@ def main():
   parser = argparse.ArgumentParser(description='Submits code to the Udacity site.')
   parser.add_argument('quiz', choices = ['proxy_server', 'proxy_cache'])
   parser.add_argument('--provider', choices = ['gt', 'udacity'], default = 'udacity')
-  parser.add_argument('--environment', choices = ['local', 'development', 'staging', 'production'], default = 'development')
+  parser.add_argument('--environment', choices = ['local', 'development', 'staging', 'production'], default = 'production')
 
   args = parser.parse_args()
   
-  files_map = {'proxy_server': ['handle_with_curl.c', 'webproxy.c']
-               'proxy_cache':  ['handle_with_cache.c', 'shm_channel.h', 'webproxy.c', 'shm_channel.c', 'simplecached.c']}
+  quiz_map = {'proxy_server': 'pr3_proxy_server', 'proxy_cache': 'pr3_proxy_cache'}
+
+  files_map = {'pr3_proxy_server': ['handle_with_curl.c', 'webproxy.c'],
+               'pr3_proxy_cache':  ['handle_with_cache.c', 'shm_channel.h', 'webproxy.c', 'shm_channel.c', 'simplecached.c']}
+
+  quiz = quiz_map[args.quiz]
 
   app_data_dir = os.path.abspath(".bonnie")
 
   submission = Submission('cs8803-02', quiz, 
-                          filenames = files_map[args.quiz], 
+                          filenames = files_map[quiz], 
                           exclude = False, 
                           environment = args.environment, 
                           provider = args.provider,
