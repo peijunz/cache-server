@@ -54,7 +54,7 @@ def main():
     time.sleep(3.0)
 
   if submission.result():
-    result = json.loads(submission.result())
+    result = submission.result()
     if len(result['errors']) > 0:
       print "Errors:"
       print_report(result['errors'])
