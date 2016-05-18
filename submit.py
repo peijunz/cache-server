@@ -45,10 +45,8 @@ def main():
 
   submission = Submission('cs8803-02', quiz, 
                           filenames = files_map[quiz], 
-                          exclude = False, 
                           environment = args.environment, 
-                          provider = args.provider,
-                          app_data_dir = app_data_dir)
+                          provider = args.provider)
 
   while not submission.poll():
     time.sleep(3.0)
