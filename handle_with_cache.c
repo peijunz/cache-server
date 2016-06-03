@@ -10,7 +10,7 @@
 //Replace with an implementation of handle_with_cache and any other
 //functions you may need.
 
-ssize_t handle_with_file(gfcontext_t *ctx, char *path, void* arg){
+ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg){
 	int fildes;
 	size_t file_len, bytes_transferred;
 	ssize_t read_len, write_len;
