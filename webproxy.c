@@ -78,6 +78,11 @@ int main(int argc, char **argv) {
         exit(1);
     }
   }
+
+  if (!server) {
+    fprintf(stderr, "Invalid (null) server name\n");
+    exit(1);
+  }
   
   /* SHM initialization...*/
 

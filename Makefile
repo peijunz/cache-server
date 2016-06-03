@@ -1,4 +1,4 @@
-CFLAGS := -Wall --std=gnu99 -g -Wno-format-security
+CFLAGS := -Wall --std=gnu99 -g3 -Wno-format-security -Wall -Werror -fsanitize=address -fno-omit-frame-pointer
 CURL_LIBS := $(shell curl-config --libs)
 CURL_CFLAGS := $(shell curl-config --cflags)
 
