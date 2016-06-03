@@ -30,6 +30,7 @@ static struct option gLongOptions[] = {
 };
 
 extern ssize_t handle_with_file(gfcontext_t *ctx, char *path, void* arg);
+extern ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg);
 
 static gfserver_t gfs;
 
