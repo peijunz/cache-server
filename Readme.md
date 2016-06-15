@@ -263,7 +263,7 @@ Note that address sanitizer is enabled in the test server as well as the
 project Makefile.  To fully exploit this, you may need to set further options
 for your environment.
 - [Google Sanitizer Wiki](https://github.com/google/sanitizers/wiki/AddressSanitizer)
-- [Using GDB with Address Sanitizer](https://xstack.exascale-tech.com/wiki/index.php/Debugging_with_AddressSanitizer)git p
+- [Using GDB with Address Sanitizer](https://xstack.exascale-tech.com/wiki/index.php/Debugging_with_AddressSanitizer)
 
 Address Sanitizer is not compatible with valgrind.  If you wish to use valgrind, you
 should build a version of your code without Address Sanitizer. In most cases, your
