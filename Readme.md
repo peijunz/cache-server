@@ -91,7 +91,7 @@ Here is a summary of the relevant files and their roles.
 Once you have completed your programs inside the echo directory, you can submit
 it with the command
 ```
-python submit.py proxy
+python submit.py proxy_server
 ```
 
 ##Part 2
@@ -235,7 +235,7 @@ Here is a summary of the relevant files and their roles.
 Once you have completed your programs inside the echo directory, you can submit
 it with the command
 ```
-python submit.py cache
+python submit.py proxy_cache
 ```
 
 ##Extra Credit
