@@ -9,14 +9,32 @@ integrate the code you wrote from the first two parts with your own code from
 Project  so that you have an end-to-end implementation of a getfile proxy with
 cache built from your own source code.
 
-##Directions
-- Download the starter code in the tarball ud923-project3.tar.gz from the
-	“Downloadables” section of one of project’s morsels the on the Udacity
-	site.
-- Run ’tar -zxf ud923-project3.tar.gz’ to untar the file.
-- Begin programming by modifying only those specified below.
-- Turn in your code by copying and pasting onto the Udacity programming
-	quizzes.
+##Setup
+You can clone the code in this repository with the command
+```
+git clone --recursive https://github.gatech.edu/omscs8803-02/pr3.git
+```
+
+If your version of git does not support the `--recursive` option, you may
+instead use the sequence
+```
+git clone https://github.gatech.edu/omscs8803-02/pr3.git
+cd pr3
+git submodule init
+git submodule update
+```
+
+##Submission Instructions
+All code should be submitted through the submit.py script given at the top
+level of this repository.  For instructions on how to submit individual
+components of the assignment see the instructions below.  You may submit as
+many times as you like.  Your last submission before the project deadline will
+be downloaded by the teaching assistants and graded according to the assignment
+rubric.
+
+After submitting, you may double-check the results of your submission by
+visiting the [Udacity/GT autograding website](https://bonnie.udacity.com) and
+going to the student portal.
 
 ##Part 1
 To convert the getfile server into a proxy, you only need to replace the part
@@ -70,14 +88,11 @@ Here is a summary of the relevant files and their roles.
 	requested of  http://s3.amazonaws.com/content.udacity-data.com as part of
 	your tests.
 
-**TODO**
-To turn-in this portion of the assignment, you should navigate to
-
-https://www.udacity.com/course/viewer#!/c-ud923/l-2906788540/m-3729408566
-
-and copy/paste your code in and submit.  The site will run a “build
-verification test” that will help catch more obvious mistakes.  A grader will
-review your work after the submission deadline.
+Once you have completed your programs inside the echo directory, you can submit
+it with the command
+```
+python submit.py proxy
+```
 
 ##Part 2
 The objective of this second part of the project is for you to gain experience
@@ -217,12 +232,11 @@ Here is a summary of the relevant files and their roles.
 	requested of  https://s3.amazonaws.com/content.udacity-data.com as part of
 	your tests.
 
-**TODO**
-To turn-in this portion of the assignment, you should navigate to
-
-https://www.udacity.com/course/viewer#!/c-ud923/l-2906788540/m-3738778755
-
-and copy and paste your code in.
+Once you have completed your programs inside the echo directory, you can submit
+it with the command
+```
+python submit.py cache
+```
 
 ##Extra Credit
 Integrate the code you wrote from the first two parts into your source code
