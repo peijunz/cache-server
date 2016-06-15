@@ -255,15 +255,15 @@ that documents your code and how to compile and run it.
   - POSIX Shared Memory API
 
 ###Sample Source Code
-- [Signal Handling Code Example](https://www.thegeekstuff.com/2012/03/catch-signnals-sample-c-code/)
+- [Signal Handling Code Example](http://www.thegeekstuff.com/2012/03/catch-signnals-sample-c-code/)
 - [Libcurl Code Example](https://www.hackthissite.org/articles/read/1078)
 
 ###Address Sanitizer
 Note that address sanitizer is enabled in the test server as well as the
 project Makefile.  To fully exploit this, you may need to set further options
 for your environment.
-- [Google Sanitizer Wiki](https//github.com/google/sanitizers/wiki/AddressSanitizer)
-- [Using GDB with Address Sanitizer](https://xstack.exascale-tech.com/wiki/index.php/Debugging_with_AddressSanitizer)
+- [Google Sanitizer Wiki](https://github.com/google/sanitizers/wiki/AddressSanitizer)
+- [Using GDB with Address Sanitizer](https://xstack.exascale-tech.com/wiki/index.php/Debugging_with_AddressSanitizer)git p
 
 Address Sanitizer is not compatible with valgrind.  If you wish to use valgrind, you
 should build a version of your code without Address Sanitizer. In most cases, your
