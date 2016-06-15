@@ -62,7 +62,9 @@ options:
 Note that you don’t have to write your own http server.  Workloads are provided
 for files that live on an amazon S3 instance
 http://s3.amazonaws.com/content.udacity-data.com.  Concatenate this with one of
-the paths found in workload.txt to create a valid url.
+the paths found in workload.txt to create a valid url. 
+**Note: the grading server will not use the same URL.**
+Do not encode this URL into your code or it should fail in the auto-grader.
 
 Here is a summary of the relevant files and their roles.
 - Makefile - (do not modify) file used to compile the code.  Run ‘make
@@ -147,13 +149,15 @@ robust to misbehaving clients.
 Neither the cache daemon nor the proxy should crash if the other process is not
 started already.   For instance, if the proxy cannot connect to the IPC
 mechanism over which requests are communicated to the cache, then it might
-delay for a second and try again.
+delay for a second and try again.  The test server will start your cache and
+in different orders.
 
 It is not polite to terminate a process without cleaning up, so the proxy
 process (and perhaps the cache as well depending on your implementation) must
 use a signal handler for both SIGTERM (signal for kill) and SIGINT (signal for
 Ctrl-C) to first remove all existing IPC objects -- shared memory segments,
-semaphores, message queues, or anything else -- and only then terminate.
+semaphores, message queues, or anything else -- and only then terminate.  The
+test server will check for cleanup of IPC resources.
 
 The command line interface for the proxy process should be as follows.
 
@@ -249,9 +253,21 @@ that documents your code and how to compile and run it.
 - P3L3 Inter-Process Communication
   - SysV Shared Memory API
   - POSIX Shared Memory API
+
 ###Sample Source Code
-- Signal Handling Code Example
-- Libcurl Code Example
+- [Signal Handling Code Example](http://www.thegeekstuff.com/2012/03/catch-signnals-sample-c-code/)
+- [Libcurl Code Example](https://www.hackthissite.org/articles/read/1078)
+
+###Address Sanitizer
+Note that address sanitizer is enabled in the test server as well as the
+project Makefile.  To fully exploit this, you may need to set further options
+for your environment.
+- [Google Sanitizer Wiki](https://github.com/google/sanitizers/wiki/AddressSanitizer)
+- [Using GDB with Address Sanitizer](https://xstack.exascale-tech.com/wiki/index.php/Debugging_with_AddressSanitizer)
+
+Address Sanitizer is not compatible with valgrind.  If you wish to use valgrind, you
+should build a version of your code without Address Sanitizer. In most cases, your
+code will be tested with Address Sanitizer enabled.
 
 ##Rubric
 ###Part 1: Sockets (35 points)
