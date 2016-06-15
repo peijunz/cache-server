@@ -253,9 +253,11 @@ that documents your code and how to compile and run it.
 - P3L3 Inter-Process Communication
   - SysV Shared Memory API
   - POSIX Shared Memory API
+
 ###Sample Source Code
 - Signal Handling Code Example
 - Libcurl Code Example
+
 ###Address Sanitizer
 Note that address sanitizer is enabled in the test server as well as the
 project Makefile.  To fully exploit this, you may need to set further options
