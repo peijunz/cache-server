@@ -1,4 +1,5 @@
-#Foreword
+#Inter-Process Communication
+##Foreword
 This project has two parts, plus an extra-credit portion.  In the first part,
 you will convert an implementation of a getfile server into a getfile proxy
 that converts incoming Getfile requests into http requests for a server on the
@@ -8,7 +9,7 @@ integrate the code you wrote from the first two parts with your own code from
 Project  so that you have an end-to-end implementation of a getfile proxy with
 cache built from your own source code.
 
-#Directions
+##Directions
 - Download the starter code in the tarball ud923-project3.tar.gz from the
 	“Downloadables” section of one of project’s morsels the on the Udacity
 	site.
@@ -17,7 +18,7 @@ cache built from your own source code.
 - Turn in your code by copying and pasting onto the Udacity programming
 	quizzes.
 
-#Part 1
+##Part 1
 To convert the getfile server into a proxy, you only need to replace the part
 of the code that retrieves the file from disc with code that retrieves it from
 the web.  Using the gfserver library provided in the starter code, this is as
@@ -37,7 +38,7 @@ usage:
 options:
   -p port for incoming requests
   -t number of worker threads
-  -s server address(e.g. “localhost:8080”, or “http://example.com”) 
+  -s server address(e.g. “localhost:8080”, or “http://example.com”)
 ```
 
 Note that you don’t have to write your own http server.  Workloads are provided
@@ -70,7 +71,7 @@ Here is a summary of the relevant files and their roles.
 	your tests.
 
 **TODO**
-To turn-in this portion of the assignment, you should navigate to 
+To turn-in this portion of the assignment, you should navigate to
 
 https://www.udacity.com/course/viewer#!/c-ud923/l-2906788540/m-3729408566
 
@@ -78,7 +79,7 @@ and copy/paste your code in and submit.  The site will run a “build
 verification test” that will help catch more obvious mistakes.  A grader will
 review your work after the submission deadline.
 
-#Part 2
+##Part 2
 The objective of this second part of the project is for you to gain experience
 with shared memory-based IPC. You will implement a cache process that will run
 on the same machine as the proxy and communicate with it via shared memory.
@@ -126,7 +127,7 @@ The cache will have to set up some communication mechanism (socket, message
 queue, shared memory) by which the proxy can communicate its request along with
 the information about the communication mechanism (shared memory name, id,
 etc.)  For the purposes of this project, this mechanism does not have to be
-robust to misbehaving clients.  
+robust to misbehaving clients.
 
 Neither the cache daemon nor the proxy should crash if the other process is not
 started already.   For instance, if the proxy cannot connect to the IPC
@@ -146,11 +147,11 @@ usage:
   webproxy [options]
 options:
   -n number of segments to use in communication with cache.
-  -z the size (in bytes) of the segments. 
+  -z the size (in bytes) of the segments.
   -p port for incoming requests
   -t number of worker threads
   -s server address(e.g. “localhost:8080”, or “example.com”)
-  -h print a help message 
+  -h print a help message
 ```
 
 The command line interface for the cache process should be as follows.
@@ -197,10 +198,10 @@ Here is a summary of the relevant files and their roles.
 	which should receive requests from the proxy and serve up the contents of the
 	cache using the simplecache interface. The process should use a boss-worker
 	multithreaded pattern, where individual worker threads are responsible for
-	handling a single request from the proxy. 
+	handling a single request from the proxy.
 - steque.[ch] - (do not modify) you may find this steque (stack and queue) data
 	useful in implementing the the cache.  Beware this uses malloc and may not be
-	suitable for shared memory. 
+	suitable for shared memory.
 - gfclient_download - a binary executable that serves as a workload generator
 	for the proxy.  It downloads the requested files, using the current directory
 	as a prefix for all paths.
@@ -217,35 +218,35 @@ Here is a summary of the relevant files and their roles.
 	your tests.
 
 **TODO**
-To turn-in this portion of the assignment, you should navigate to 
+To turn-in this portion of the assignment, you should navigate to
 
 https://www.udacity.com/course/viewer#!/c-ud923/l-2906788540/m-3738778755
 
 and copy and paste your code in.
 
-#Extra Credit
+##Extra Credit
 Integrate the code you wrote from the first two parts into your source code
 from Project 1 to build a complete getfile-to-http proxy server with cache.
 Turn into T-square a zip file with all of the source code and a README file
 that documents your code and how to compile and run it.
 
-#References
-##Relevant Lecture Material
+##References
+###Relevant Lecture Material
 - P3L3 Inter-Process Communication
   - SysV Shared Memory API
   - POSIX Shared Memory API
-##Sample Source Code
+###Sample Source Code
 - Signal Handling Code Example
 - Libcurl Code Example
 
-#Rubric
-##Part 1: Sockets (35 points)
-###Proxy Server: Sockets 
+##Rubric
+###Part 1: Sockets (35 points)
+####Proxy Server: Sockets
 - Correctly send client requests to server via curl
 - Correctly send responses back to client using gfserver library
 
-##Part 2: Shared Memory (55 points)
-###Proxy Server: Shared Memory 
+###Part 2: Shared Memory (55 points)
+####Proxy Server: Shared Memory
 - Creation and use of shared memory segments
 - Segment ID communication
 - Cache request generation
@@ -253,15 +254,15 @@ that documents your code and how to compile and run it.
 - Synchronization
 - Proper clean up of shared memory resources
 
-###Cache: Shared Memory 
+####Cache: Shared Memory
 - Segment ID communication
 - Proxy request processing
 - Proxy response processing
 - Synchronization
 
-###Report (10 points)
+####Report (10 points)
 - Summary of the project design in README.md
 - Any observations or insights
 
-###Extra Credit (+10 points)
-- Modify Project 1 to integrate the Project 3 components, and submit via T-square 
+####Extra Credit (+10 points)
+- Modify Project 1 to integrate the Project 3 components, and submit via T-square
