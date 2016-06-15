@@ -4,7 +4,7 @@ CURL_CFLAGS := $(shell curl-config --cflags)
 
 ARCH := $(shell uname)
 ifneq ($(ARCH),Darwin)
-  LDFLAGS += -lpthread -lrt
+  LDFLAGS += -lpthread -lrt -static-libasan
 endif
 
 PROXY_OBJ := webproxy.o steque.o
