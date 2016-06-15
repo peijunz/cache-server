@@ -83,6 +83,8 @@ The objective of this second part of the project is for you to gain experience
 with shared memory-based IPC. You will implement a cache process that will run
 on the same machine as the proxy and communicate with it via shared memory.
 
+![part2 architecture](docs/part2.png)
+
 For transferring local files efficiently, you are expected to separate the data
 channel from the command channel. File content is transferred through the data
 channel and transfer command is transferred through the command channel. The
