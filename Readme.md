@@ -127,7 +127,8 @@ the proxy should query the cache to see if the file is available in local
 memory already.  If the file is available there, it should send the cached
 version.  In the real world, you would then have the proxy query the server to
 obtain the file.  For the Udacity quiz submission, however, **you need only
-check the cache**.
+check the cache**. In other words, you only need to implement client, proxy,
+cache, and the communication protocols, depicted in dark colors in the figure.
 
 In the interprocess communication, **the proxy should be responsible for
 creating and destroying the shared memory (or message queues)**.  This is good
