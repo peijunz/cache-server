@@ -3,7 +3,6 @@ import os
 import sys
 import argparse
 import json
-import yaml
 from bonnie.submission import Submission
 
 def print_report(results):

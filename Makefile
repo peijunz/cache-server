@@ -1,10 +1,10 @@
-CFLAGS := -Wall --std=gnu99 -g3 -Wno-format-security -Wall -Werror -fsanitize=address -fno-omit-frame-pointer
+CFLAGS := -Wall --std=gnu99 -g3 -Wno-format-security -Werror -fsanitize=address -fno-omit-frame-pointer
 CURL_LIBS := $(shell curl-config --libs)
 CURL_CFLAGS := $(shell curl-config --cflags)
 
 ARCH := $(shell uname)
 ifneq ($(ARCH),Darwin)
-  LDFLAGS += -lpthread -lrt
+  LDFLAGS += -lpthread -lrt -static-libasan
 endif
 
 PROXY_OBJ := webproxy.o steque.o
