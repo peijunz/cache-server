@@ -3,6 +3,7 @@ import os
 import sys
 import argparse
 import json
+import datetime
 from bonnie.submission import Submission
 
 def print_report(results):
@@ -32,7 +33,9 @@ def main():
   parser.add_argument('--environment', choices = ['local', 'development', 'staging', 'production'], default = 'production')
 
   args = parser.parse_args()
-  
+
+  path_map = { 'proxy_server': '.', 'proxy_cache': '.'}
+
   quiz_map = {'proxy_server': 'pr3_proxy_server', 'proxy_cache': 'pr3_proxy_cache'}
 
   files_map = {'pr3_proxy_server': ['handle_with_curl.c', 'webproxy.c'],
@@ -47,21 +50,37 @@ def main():
                           environment = args.environment, 
                           provider = args.provider)
 
+  timestamp = "{:%Y-%m-%d-%H-%M-%S}".format(datetime.datetime.now())
+
+
   while not submission.poll():
     time.sleep(3.0)
 
   if submission.result():
     result = submission.result()
-    if len(result['errors']) > 0:
-      print "Errors:"
-      print_report(result['errors'])
-    if len(result['failures']) > 0:      
-      print "Failures:"
-      print_report(result['failures'])    
-    if len(result['failures']) + len(result['errors']) == 0:
-      print "Correct!"
+
+    filename = "%s-result-%s.json" % (args.quiz, timestamp)
+
+    with open(filename, "w") as fd:
+      json.dump(result, fd, indent=4, separators=(',', ': '))
+
+    for t in result['tests']:
+      description = '{:70s}'.format(t['description'][:69]+":")
+      passfail = t['output']['passfail']
+      print '%s %s' % (description, passfail.rjust(9))
+
+    print "(Details available in %s.)" % os.path.join(path_map[args.quiz], filename)
+
   elif submission.error_report():
-    print submission.error_report()
+    error_report = submission.error_report()
+
+    filename = "%s-error-report-%s.json" % (args.quiz, timestamp)
+
+    with open(filename, "w") as fd:
+      json.dump(error_report, fd, indent=4, separators=(',', ': '))
+
+    print "Something went wrong.  Please see the error report in %s." % os.path.join(path_map[args.quiz], filename)
+
   else:
     print "Unknown error."
 

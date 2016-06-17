@@ -90,8 +90,7 @@ Here is a summary of the relevant files and their roles.
 	requested of  http://s3.amazonaws.com/content.udacity-data.com as part of
 	your tests.
 
-Once you have completed your programs inside the echo directory, you can submit
-it with the command
+Once you have completed your program, you can submit it with the command
 ```
 python submit.py proxy_server
 ```

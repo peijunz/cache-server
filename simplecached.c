@@ -40,7 +40,6 @@ void Usage() {
 
 int main(int argc, char **argv) {
 	int nthreads = 1;
-	int i;
 	char *cachedir = "locals.txt";
 	char option_char;
 
@@ -61,6 +60,10 @@ int main(int argc, char **argv) {
 				Usage();
 				exit(1);
 		}
+	}
+
+	if ((nthreads < 1) || (nthreads>1024)) {
+		nthreads = 1;
 	}
 
 	if (signal(SIGINT, _sig_handler) == SIG_ERR){
