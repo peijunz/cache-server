@@ -244,8 +244,8 @@ python submit.py proxy_cache
 ```
 
 ##README File
-Do not forget to include your student-readme file.  It will be automatically uploaded
-with your submission when you submit either project but must be named **student-readme**
+Do not forget to include your readme-student file.  It will be automatically uploaded
+with your submission when you submit either project but must be named **readme-student**
 
 ##Extra Credit
 Integrate the code you wrote from the first two parts into your source code
