@@ -90,7 +90,7 @@ Here is a summary of the relevant files and their roles.
 	requested of  http://s3.amazonaws.com/content.udacity-data.com as part of
 	your tests.
 
-Once you have completed your programs inside the echo directory, you can submit
+Once you have completed your programs inside the p3 directory, you can submit
 it with the command
 ```
 python submit.py proxy_server
@@ -237,11 +237,15 @@ Here is a summary of the relevant files and their roles.
 	requested of  https://s3.amazonaws.com/content.udacity-data.com as part of
 	your tests.
 
-Once you have completed your programs inside the echo directory, you can submit
+Once you have completed your programs inside the p3 directory, you can submit
 it with the command
 ```
 python submit.py proxy_cache
 ```
+
+##README File
+Do not forget to include your student-readme file.  It will be automatically uploaded
+with your submission when you submit either project but must be named **student-readme**
 
 ##Extra Credit
 Integrate the code you wrote from the first two parts into your source code
