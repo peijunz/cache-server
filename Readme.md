@@ -90,8 +90,8 @@ Here is a summary of the relevant files and their roles.
 	requested of  http://s3.amazonaws.com/content.udacity-data.com as part of
 	your tests.
 
-Once you have completed your programs inside the p3 directory, you can submit
-it with the command
+Once you have completed your program, you can submit it with the command
+
 ```
 python submit.py proxy_server
 ```
@@ -237,13 +237,13 @@ Here is a summary of the relevant files and their roles.
 	requested of  https://s3.amazonaws.com/content.udacity-data.com as part of
 	your tests.
 
-Once you have completed your programs inside the p3 directory, you can submit
+Once you have completed your program you can submit
 it with the command
 ```
 python submit.py proxy_cache
 ```
 
-##README File
+###Part3
 Do not forget to include your readme-student file.  It will be automatically uploaded
 with your submission when you submit either project but must be named **readme-student**
 
@@ -301,3 +301,4 @@ code will be tested with Address Sanitizer enabled.
 
 ####Extra Credit (+10 points)
 - Modify Project 1 to integrate the Project 3 components, and submit via T-square
+
