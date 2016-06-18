@@ -38,8 +38,8 @@ def main():
 
   quiz_map = {'proxy_server': 'pr3_proxy_server', 'proxy_cache': 'pr3_proxy_cache'}
 
-  files_map = {'pr3_proxy_server': ['handle_with_curl.c', 'webproxy.c'],
-               'pr3_proxy_cache':  ['handle_with_cache.c', 'shm_channel.h', 'webproxy.c', 'shm_channel.c', 'simplecached.c']}
+  files_map = {'pr3_proxy_server': ['handle_with_curl.c', 'webproxy.c', 'readme-student'],
+               'pr3_proxy_cache':  ['handle_with_cache.c', 'shm_channel.h', 'webproxy.c', 'shm_channel.c', 'simplecached.c', 'readme-student']}
 
   quiz = quiz_map[args.quiz]
 
