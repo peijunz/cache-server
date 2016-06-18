@@ -21,5 +21,5 @@ simplecached: simplecache.o simplecached.o shm_channel.o steque.o
 
 clean:
 	mv gfserver.o gfserver.tmpo 
-	rm -rf *.o webproxy
+	rm -rf *.o webproxy simplecached
 	mv gfserver.tmpo gfserver.o  	
