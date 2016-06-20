@@ -118,7 +118,7 @@ cache to the proxy process by way of shared memory.
 You can use either System V or the POSIX API to implement the shared-memory
 component and/or other IPC mechanisms (e.g., message queues or semaphores).
 Please see the list of reference material.  If it works on the course’s VM,
-then it will work in the Udacity build verification test.
+then it will work in the Udacity test.
 
 The command line interface for the proxy should include two new components: the
 number of segments and the size of the segments to be used for the interprocess
