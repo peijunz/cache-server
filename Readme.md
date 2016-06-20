@@ -6,7 +6,7 @@ that converts incoming Getfile requests into http requests for a server on the
 internet.  In the second part, you will implement a simple cache that
 communicates with the proxy via shared memory.  For extra credit, you may
 integrate the code you wrote from the first two parts with your own code from
-Project  so that you have an end-to-end implementation of a getfile proxy with
+Project 1 so that you have an end-to-end implementation of a getfile proxy with
 cache built from your own source code.
 
 ##Setup
