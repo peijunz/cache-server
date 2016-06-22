@@ -243,7 +243,6 @@ it with the command
 python submit.py proxy_cache
 ```
 
-###Part3
 Do not forget to include your readme-student file.  It will be automatically uploaded
 with your submission when you submit either project but must be named **readme-student**
 
@@ -295,10 +294,10 @@ code will be tested with Address Sanitizer enabled.
 - Proxy response processing
 - Synchronization
 
-####Report (10 points)
+###Report (10 points)
 - Summary of the project design in README.md
 - Any observations or insights
 
-####Extra Credit (+10 points)
+###Extra Credit (+10 points)
 - Modify Project 1 to integrate the Project 3 components, and submit via T-square
 
