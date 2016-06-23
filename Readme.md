@@ -260,7 +260,7 @@ that documents your code and how to compile and run it.
   - POSIX Shared Memory API
 
 ###Sample Source Code
-- [Signal Handling Code Example](http://www.thegeekstuff.com/2012/03/catch-signnals-sample-c-code/)
+- [Signal Handling Code Example](http://www.thegeekstuff.com/2012/03/catch-signals-sample-c-code/)
 - [Libcurl Code Example](https://www.hackthissite.org/articles/read/1078)
 
 ###Address Sanitizer
