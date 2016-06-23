@@ -6,7 +6,7 @@ that converts incoming Getfile requests into http requests for a server on the
 internet.  In the second part, you will implement a simple cache that
 communicates with the proxy via shared memory.  For extra credit, you may
 integrate the code you wrote from the first two parts with your own code from
-Project  so that you have an end-to-end implementation of a getfile proxy with
+Project 1 so that you have an end-to-end implementation of a getfile proxy with
 cache built from your own source code.
 
 ##Setup
@@ -118,7 +118,7 @@ cache to the proxy process by way of shared memory.
 You can use either System V or the POSIX API to implement the shared-memory
 component and/or other IPC mechanisms (e.g., message queues or semaphores).
 Please see the list of reference material.  If it works on the course’s VM,
-then it will work in the Udacity build verification test.
+then it will work in the Udacity test.
 
 The command line interface for the proxy should include two new components: the
 number of segments and the size of the segments to be used for the interprocess
@@ -243,7 +243,6 @@ it with the command
 python submit.py proxy_cache
 ```
 
-###Part3
 Do not forget to include your readme-student file.  It will be automatically uploaded
 with your submission when you submit either project but must be named **readme-student**
 
@@ -295,10 +294,10 @@ code will be tested with Address Sanitizer enabled.
 - Proxy response processing
 - Synchronization
 
-####Report (10 points)
+###Report (10 points)
 - Summary of the project design in README.md
 - Any observations or insights
 
-####Extra Credit (+10 points)
+###Extra Credit (+10 points)
 - Modify Project 1 to integrate the Project 3 components, and submit via T-square
 
