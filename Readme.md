@@ -46,9 +46,9 @@ file.  To implement the callback you should use the
 
 ![part1 architecture](docs/part1.png)
 
-Your proxy server must use a boss-worker multi-threading pattern, allowing it
-to serve multiple connections at once, and it must support the command line
-arguments listed below.
+The framework code provided will handle implementation of the boss-worker multi-
+threading pattern.  This allows it to serve multiple connections at once.  Your
+implementation must support the command line arguments listed below.
 
 ```
 usage:
