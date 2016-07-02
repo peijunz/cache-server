@@ -295,9 +295,9 @@ code will be tested with Address Sanitizer enabled.
 - Synchronization
 
 ###Report (10 points)
-- Summary of the project design in README.md
-- Any observations or insights
+- The readme-student file is where you write your report. Please include
+  - Summary of the project design
+  - Any observations or insights
 
 ###Extra Credit (+10 points)
 - Modify Project 1 to integrate the Project 3 components, and submit via T-square
-
