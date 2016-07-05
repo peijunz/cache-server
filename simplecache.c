@@ -7,6 +7,10 @@
 
 #define MAX_KEYLEN 256
 
+#if !defined(CACHE_FAILURE)
+#define CACHE_FAILURE (-1)
+#endif // CACHE_FAILURE
+
 typedef struct{
 	int fildes;
 	char key[MAX_KEYLEN];
@@ -26,7 +30,7 @@ int simplecache_init(char *filename){
 
 	if( NULL == (filelist = fopen(filename, "r"))){
 		fprintf(stderr, "Unable to open file in simplecache_init.\n");
-		exit(EXIT_FAILURE);
+		exit(CACHE_FAILURE);
 	}
 
 	items = (item_t*) malloc(capacity * sizeof(item_t));
@@ -42,7 +46,7 @@ int simplecache_init(char *filename){
 
 		if( 0 > (items[nitems].fildes = open(path, O_RDONLY))){
 			fprintf(stderr, "Unable to open file %s.\n", path);
-			exit(EXIT_FAILURE);
+			exit(CACHE_FAILURE);
 		}
 		nitems++;
 

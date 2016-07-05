@@ -9,6 +9,10 @@
 #include "shm_channel.h"
 #include "simplecache.h"
 
+#if !defined(CACHE_FAILURE)
+#define CACHE_FAILURE (-1)
+#endif // CACHE_FAILURE
+
 #define MAX_CACHE_REQUEST_LEN 256
 
 static void _sig_handler(int signo){
@@ -68,12 +72,12 @@ int main(int argc, char **argv) {
 
 	if (signal(SIGINT, _sig_handler) == SIG_ERR){
 		fprintf(stderr,"Can't catch SIGINT...exiting.\n");
-		exit(EXIT_FAILURE);
+		exit(CACHE_FAILURE);
 	}
 
 	if (signal(SIGTERM, _sig_handler) == SIG_ERR){
 		fprintf(stderr,"Can't catch SIGTERM...exiting.\n");
-		exit(EXIT_FAILURE);
+		exit(CACHE_FAILURE);
 	}
 
 	/* Initializing the cache */

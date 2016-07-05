@@ -50,12 +50,12 @@ int main(int argc, char **argv) {
 
   if (signal(SIGINT, _sig_handler) == SIG_ERR){
     fprintf(stderr,"Can't catch SIGINT...exiting.\n");
-    exit(EXIT_FAILURE);
+    exit(SERVER_FAILURE);
   }
 
   if (signal(SIGTERM, _sig_handler) == SIG_ERR){
     fprintf(stderr,"Can't catch SIGTERM...exiting.\n");
-    exit(EXIT_FAILURE);
+    exit(SERVER_FAILURE);
   }
 
   // Parse and set command line arguments
