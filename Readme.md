@@ -1,4 +1,4 @@
-#Inter-Process Communication
+#IPC: Inter-Process Communication
 ##Foreword
 This project has two parts, plus an extra-credit portion.  In the first part,
 you will convert an implementation of a getfile server into a getfile proxy
