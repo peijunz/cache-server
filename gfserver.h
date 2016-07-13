@@ -12,6 +12,10 @@ typedef int gfstatus_t;
 #define  GF_FILE_NOT_FOUND 400
 #define  GF_ERROR 500
 
+#if !defined(SERVER_FAILURE)
+#define SERVER_FAILURE (-1)
+#endif // SERVER_FAILURE
+
 typedef struct _gfserver_t gfserver_t;
 typedef struct _gfcontext_t gfcontext_t;
 

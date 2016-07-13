@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include "steque.h"
 
+#if !defined(STEQUE_FAILURE)
+#define STEQUE_FAILURE (-1)
+#endif // STEQUE_FAILURE
+
 void steque_init(steque_t *this){
   this->front = NULL;
   this->back = NULL;
@@ -53,7 +57,7 @@ steque_item steque_pop(steque_t* this){
   if(this->front == NULL){
     fprintf(stderr, "Error: underflow in steque_pop.\n");
     fflush(stderr);
-    exit(EXIT_FAILURE);
+    exit(STEQUE_FAILURE);
   }
 
   node = this->front;
@@ -82,7 +86,7 @@ steque_item steque_front(steque_t* this){
   if(this->front == NULL){
     fprintf(stderr, "Error: underflow in steque_front.\n");
     fflush(stderr);
-    exit(EXIT_FAILURE);
+    exit(STEQUE_FAILURE);
   }
   
   return this->front->item;

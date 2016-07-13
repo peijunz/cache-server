@@ -1,4 +1,4 @@
-#Inter-Process Communication
+#IPC: Inter-Process Communication
 ##Foreword
 This project has two parts, plus an extra-credit portion.  In the first part,
 you will convert an implementation of a getfile server into a getfile proxy
@@ -6,7 +6,7 @@ that converts incoming Getfile requests into http requests for a server on the
 internet.  In the second part, you will implement a simple cache that
 communicates with the proxy via shared memory.  For extra credit, you may
 integrate the code you wrote from the first two parts with your own code from
-Project  so that you have an end-to-end implementation of a getfile proxy with
+Project 1 so that you have an end-to-end implementation of a getfile proxy with
 cache built from your own source code.
 
 ##Setup
@@ -46,9 +46,9 @@ file.  To implement the callback you should use the
 
 ![part1 architecture](docs/part1.png)
 
-Your proxy server must use a boss-worker multi-threading pattern, allowing it
-to serve multiple connections at once, and it must support the command line
-arguments listed below.
+The framework code provided will handle implementation of the boss-worker multi-
+threading pattern.  This allows it to serve multiple connections at once.  Your
+implementation must support the command line arguments listed below.
 
 ```
 usage:
@@ -90,8 +90,8 @@ Here is a summary of the relevant files and their roles.
 	requested of  http://s3.amazonaws.com/content.udacity-data.com as part of
 	your tests.
 
-Once you have completed your programs inside the echo directory, you can submit
-it with the command
+Once you have completed your program, you can submit it with the command
+
 ```
 python submit.py proxy_server
 ```
@@ -118,7 +118,7 @@ cache to the proxy process by way of shared memory.
 You can use either System V or the POSIX API to implement the shared-memory
 component and/or other IPC mechanisms (e.g., message queues or semaphores).
 Please see the list of reference material.  If it works on the course’s VM,
-then it will work in the Udacity build verification test.
+then it will work in the Udacity test.
 
 The command line interface for the proxy should include two new components: the
 number of segments and the size of the segments to be used for the interprocess
@@ -237,11 +237,14 @@ Here is a summary of the relevant files and their roles.
 	requested of  https://s3.amazonaws.com/content.udacity-data.com as part of
 	your tests.
 
-Once you have completed your programs inside the echo directory, you can submit
+Once you have completed your program you can submit
 it with the command
 ```
 python submit.py proxy_cache
 ```
+
+Do not forget to include your readme-student file.  It will be automatically uploaded
+with your submission when you submit either project but must be named **readme-student**
 
 ##Extra Credit
 Integrate the code you wrote from the first two parts into your source code
@@ -256,7 +259,7 @@ that documents your code and how to compile and run it.
   - POSIX Shared Memory API
 
 ###Sample Source Code
-- [Signal Handling Code Example](http://www.thegeekstuff.com/2012/03/catch-signnals-sample-c-code/)
+- [Signal Handling Code Example](http://www.thegeekstuff.com/2012/03/catch-signals-sample-c-code/)
 - [Libcurl Code Example](https://www.hackthissite.org/articles/read/1078)
 
 ###Address Sanitizer
@@ -291,9 +294,10 @@ code will be tested with Address Sanitizer enabled.
 - Proxy response processing
 - Synchronization
 
-####Report (10 points)
-- Summary of the project design in README.md
-- Any observations or insights
+###Report (10 points)
+- The readme-student file is where you write your report. Please include
+  - Summary of the project design
+  - Any observations or insights
 
-####Extra Credit (+10 points)
+###Extra Credit (+10 points)
 - Modify Project 1 to integrate the Project 3 components, and submit via T-square

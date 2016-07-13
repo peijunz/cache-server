@@ -26,7 +26,7 @@ ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg){
 			return gfs_sendheader(ctx, GF_FILE_NOT_FOUND, 0);
 		else
 			/* Otherwise, it must have been a server error. gfserver library will handle*/ 
-			return EXIT_FAILURE;
+			return SERVER_FAILURE;
 	}
 
 	/* Calculating the file size */
@@ -41,12 +41,12 @@ ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg){
 		read_len = read(fildes, buffer, 4096);
 		if (read_len <= 0){
 			fprintf(stderr, "handle_with_file read error, %zd, %zu, %zu", read_len, bytes_transferred, file_len );
-			return EXIT_FAILURE;
+			return SERVER_FAILURE;
 		}
 		write_len = gfs_send(ctx, buffer, read_len);
 		if (write_len != read_len){
 			fprintf(stderr, "handle_with_file write error");
-			return EXIT_FAILURE;
+			return SERVER_FAILURE;
 		}
 		bytes_transferred += write_len;
 	}
