@@ -43,8 +43,6 @@ def main():
 
   quiz = quiz_map[args.quiz]
 
-  app_data_dir = os.path.abspath(".bonnie")
-
   submission = Submission('cs8803-02', quiz, 
                           filenames = files_map[quiz], 
                           environment = args.environment, 
