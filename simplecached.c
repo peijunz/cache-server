@@ -13,7 +13,7 @@
 #define CACHE_FAILURE (-1)
 #endif // CACHE_FAILURE
 
-#define MAX_CACHE_REQUEST_LEN 256
+#define MAX_CACHE_REQUEST_LEN 512
 
 static void _sig_handler(int signo){
 	if (signo == SIGINT || signo == SIGTERM){
@@ -26,15 +26,15 @@ static void _sig_handler(int signo){
 "usage:\n"                                                                    \
 "  simplecached [options]\n"                                                  \
 "options:\n"                                                                  \
-"  -t [thread_count]   Num worker threads (Default: 1, Range: 1-1000)\n"      \
 "  -c [cachedir]       Path to static files (Default: ./)\n"                  \
-"  -h                  Show this help message\n"                              
+"  -h                  Show this help message\n"                              \
+"  -t [thread_count]   Num worker threads (Default: 1, Range: 1-1000)\n"
 
 /* OPTIONS DESCRIPTOR ====================================================== */
 static struct option gLongOptions[] = {
-  {"nthreads",           required_argument,      NULL,           't'},
   {"cachedir",           required_argument,      NULL,           'c'},
   {"help",               no_argument,            NULL,           'h'},
+  {"nthreads",           required_argument,      NULL,           't'},
   {NULL,                 0,                      NULL,             0}
 };
 
