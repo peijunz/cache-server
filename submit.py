@@ -4,7 +4,7 @@ import sys
 import argparse
 import json
 import datetime
-from bonnie.submission import Submission
+from nelson.gtomscs import submit
 
 def print_report(results):
     for result in results:
@@ -28,59 +28,25 @@ def print_report(results):
 
 def main():
   parser = argparse.ArgumentParser(description='Submits code to the Udacity site.')
-  parser.add_argument('quiz', choices = ['proxy_server', 'proxy_cache'])
-  parser.add_argument('--provider', choices = ['gt', 'udacity'], default = 'gt')
-  parser.add_argument('--environment', choices = ['local', 'development', 'staging', 'production'], default = 'production')
-
+  parser.add_argument('quiz', choices = ['proxy_server', 'proxy_cache', 'readme'])
+  
   args = parser.parse_args()
 
-  path_map = { 'proxy_server': '.', 'proxy_cache': '.'}
+  path_map = { 'proxy_server': '.', 
+               'proxy_cache': '.', 
+               'readme': '.'}
 
-  quiz_map = {'proxy_server': 'pr3_proxy_server', 'proxy_cache': 'pr3_proxy_cache'}
+  quiz_map = { 'proxy_server': 'pr3_proxy_server', 
+               'proxy_cache': 'pr3_proxy_cache', 
+               'readme' : 'pr3_readme'}
 
-  files_map = {'pr3_proxy_server': ['handle_with_curl.c', 'webproxy.c', 'readme-student'],
-               'pr3_proxy_cache':  ['handle_with_cache.c', 'shm_channel.h', 'webproxy.c', 'shm_channel.c', 'simplecached.c', 'readme-student']}
+  files_map = { 'pr3_proxy_server': ['handle_with_curl.c', 'webproxy.c'],
+                'pr3_proxy_cache':  ['handle_with_cache.c', 'shm_channel.h', 'webproxy.c', 'shm_channel.c', 'simplecached.c'],
+            		'pr3_readme' : ['readme-student.md']}
 
   quiz = quiz_map[args.quiz]
 
-  submission = Submission('cs8803-02', quiz, 
-                          filenames = files_map[quiz], 
-                          environment = args.environment, 
-                          provider = args.provider)
-
-  timestamp = "{:%Y-%m-%d-%H-%M-%S}".format(datetime.datetime.now())
-
-
-  while not submission.poll():
-    time.sleep(3.0)
-
-  if submission.result():
-    result = submission.result()
-
-    filename = "%s-result-%s.json" % (args.quiz, timestamp)
-
-    with open(filename, "w") as fd:
-      json.dump(result, fd, indent=4, separators=(',', ': '))
-
-    for t in result['tests']:
-      description = '{:70s}'.format(t['description'][:69]+":")
-      passfail = t['output']['passfail']
-      print '%s %s' % (description, passfail.rjust(9))
-
-    print "(Details available in %s.)" % os.path.join(path_map[args.quiz], filename)
-
-  elif submission.error_report():
-    error_report = submission.error_report()
-
-    filename = "%s-error-report-%s.json" % (args.quiz, timestamp)
-
-    with open(filename, "w") as fd:
-      json.dump(error_report, fd, indent=4, separators=(',', ': '))
-
-    print "Something went wrong.  Please see the error report in %s." % os.path.join(path_map[args.quiz], filename)
-
-  else:
-    print "Unknown error."
+  submit('cs8803-02', quiz, files_map[quiz])
 
 if __name__ == '__main__':
   main()

@@ -10,19 +10,22 @@ Project 1 so that you have an end-to-end implementation of a getfile proxy with
 cache built from your own source code.
 
 ##Setup
-You can clone the code in this repository with the command
+You can clone the code in this repository with the command:
+
 ```
-git clone --recursive https://github.gatech.edu/omscs8803-02/pr3.git
+git clone https://github.gatech.edu/gios-spr-2017/gios-spring2017-pr3.git
+
 ```
 
-If your version of git does not support the `--recursive` option, you may
-instead use the sequence
-```
-git clone https://github.gatech.edu/omscs8803-02/pr3.git
-cd pr3
-git submodule init
-git submodule update
-```
+Note: if you choose to **fork** the repository, please remove the class access
+to it.  You can do this by going to the "Settings" (on github.gatech.edu) for
+your repository.  On the left there is a tab for "Collaborators and Teams".  When
+you choose this it will show the class team membership.  Simply remove it (there is
+an "x" on the right hand side).   Your repository is now private and only accessible
+to you and class instructors.
+
+**If you do not remove team access, your code is visible to everyone in class.  This
+is the same as sharing your code.**
 
 ##Submission Instructions
 All code should be submitted through the submit.py script given at the top
@@ -35,6 +38,31 @@ rubric.
 After submitting, you may double-check the results of your submission by
 visiting the [Udacity/GT autograding website](https://bonnie.udacity.com) and
 going to the student portal.
+
+##README
+Throughout the project, we encourage you to keep notes on what you have done,
+how you have approached each part of the project and what resources you used in
+preparing your work.  We have provided you with a prototype file,
+**readme-student.md** that you should use throughout the project.
+
+You may submit your **readme-student.md** file with the command
+```
+python submit.py readme
+```
+
+At the prompt, please provide your GT username and password.
+
+If this is your first time submitting, the program will then ask you if you want
+to save the jwt.  If you reply yes, it will save a token on your filesystem so that you don't have to provide your
+username and password each time that you submit.
+
+The Udacity site will store your **readme-student.md** file in a database.
+This will be used during grading.  The submit script will acknowledge receipt
+of your README file.
+
+* For this and all assignments, you may submit your code as many times as you
+	like.  After the deadline,  we download your last submission prior to the
+	deadline, review your submission and assign a grade.*
 
 ##Part 1
 To convert the getfile server into a proxy, you only need to replace the part
@@ -54,10 +82,15 @@ implementation must support the command line arguments listed below.
 usage:
   webproxy [options]
 options:
+  -n number of segments to use in communication with cache.
+  -z the size (in bytes) of the segments.
   -p port for incoming requests
   -t number of worker threads
-  -s server address(e.g. “localhost:8080”, or “http://example.com”)
+  -s server address(e.g. “localhost:8086”, or “example.com”)
+  -h print a help message
 ```
+The -z and -n options are not used in this part of the project, but you will need
+to use them when you move to Part 2.  For Part 1 they may be ignored.
 
 Note that you don’t have to write your own http server.  Workloads are provided
 for files that live on an amazon S3 instance
@@ -80,10 +113,10 @@ Here is a summary of the relevant files and their roles.
 	library with an example.
 - gfclient_download - a binary executable that serves as a workload generator
 	for the proxy.  It downloads the requested files, using the current directory
-	as a prefix for all paths.
+	as a prefix for all paths. Note you must specify the correct port to use. 
 - gfclient_measure - a binary executable that serves as a workload generator
 	for the proxy.  It measures the performance of the proxy, writing one entry
-	in the metrics file for each chunk of data received.
+	in the metrics file for each chunk of data received. Note you must specify the correct port to use. 
 - webproxy.c - (modify) this is the main file for the webproxy program.  Only
 	small modifications are necessary.
 - workload.txt - (not submitted) this file contains a list of files that can be
@@ -170,7 +203,7 @@ options:
   -z the size (in bytes) of the segments.
   -p port for incoming requests
   -t number of worker threads
-  -s server address(e.g. “localhost:8080”, or “example.com”)
+  -s server address(e.g. “localhost:8086”, or “example.com”)
   -h print a help message
 ```
 
@@ -181,7 +214,7 @@ usage:
   simplecached [options]
 options:
   -t the number of threads running in the process
-  -c a filename to be passed to the initialization of the    simplecache library.
+  -c a filename to be passed to the initialization of the simplecache library.
   -h print a help message
 ```
 
@@ -224,10 +257,10 @@ Here is a summary of the relevant files and their roles.
 	suitable for shared memory.
 - gfclient_download - a binary executable that serves as a workload generator
 	for the proxy.  It downloads the requested files, using the current directory
-	as a prefix for all paths.
+	as a prefix for all paths. You must specify the correct port to use. 
 - gfclient_measure - a binary executable that serves as a workload generator
 	for the proxy.  It measures the performance of the proxy, writing one entry
-	in the metrics file for each chunk of data received.
+	in the metrics file for each chunk of data received. You must specify the correct port to use. 
 - webproxy.c - (modify) this is the main file for the webproxy program.  Only
 	small modifications are necessary.  In addition to setting up the callbacks
 	for the gfserver library, you may need to pre-create a pool of shared memory
@@ -242,9 +275,6 @@ it with the command
 ```
 python submit.py proxy_cache
 ```
-
-Do not forget to include your readme-student file.  It will be automatically uploaded
-with your submission when you submit either project but must be named **readme-student**
 
 ##Extra Credit
 Integrate the code you wrote from the first two parts into your source code
@@ -295,9 +325,10 @@ code will be tested with Address Sanitizer enabled.
 - Synchronization
 
 ###Report (10 points)
-- The readme-student file is where you write your report. Please include
+- The readme-student.md file is where you write your report. Please include
   - Summary of the project design
   - Any observations or insights
+  - Any suggestions for future improvement
 
 ###Extra Credit (+10 points)
 - Modify Project 1 to integrate the Project 3 components, and submit via T-square

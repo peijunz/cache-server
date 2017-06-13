@@ -1,11 +1,11 @@
 #include <stdlib.h>
-#include <stdio.h>
-#include <signal.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
+#include <errno.h>
+#include <signal.h>
 #include <getopt.h>
+#include <stdio.h>
 #include <pthread.h>
-
 #include "shm_channel.h"
 #include "simplecache.h"
 
@@ -13,7 +13,7 @@
 #define CACHE_FAILURE (-1)
 #endif // CACHE_FAILURE
 
-#define MAX_CACHE_REQUEST_LEN 512
+#define MAX_CACHE_REQUEST_LEN 1024
 
 static void _sig_handler(int signo){
 	if (signo == SIGINT || signo == SIGTERM){
@@ -47,12 +47,11 @@ int main(int argc, char **argv) {
 	char *cachedir = "locals.txt";
 	char option_char;
 
+	/* disable buffering to stdout */
+	setbuf(stdout, NULL);
 
-	while ((option_char = getopt_long(argc, argv, "t:c:h", gLongOptions, NULL)) != -1) {
+	while ((option_char = getopt_long(argc, argv, "c:ht:", gLongOptions, NULL)) != -1) {
 		switch (option_char) {
-			case 't': // thread-count
-				nthreads = atoi(optarg);
-				break;   
 			case 'c': //cache directory
 				cachedir = optarg;
 				break;
@@ -60,28 +59,32 @@ int main(int argc, char **argv) {
 				Usage();
 				exit(0);
 				break;    
+			case 't': // thread-count
+				nthreads = atoi(optarg);
+				break;   
 			default:
 				Usage();
 				exit(1);
 		}
 	}
 
-	if ((nthreads < 1) || (nthreads>1024)) {
+	if ((nthreads>1024) || (nthreads < 1)) {
 		nthreads = 1;
 	}
 
-	if (signal(SIGINT, _sig_handler) == SIG_ERR){
-		fprintf(stderr,"Can't catch SIGINT...exiting.\n");
+	if (SIG_ERR == signal(SIGINT, _sig_handler)){
+		fprintf(stderr,"Unable to catch SIGINT...exiting.\n");
 		exit(CACHE_FAILURE);
 	}
 
-	if (signal(SIGTERM, _sig_handler) == SIG_ERR){
-		fprintf(stderr,"Can't catch SIGTERM...exiting.\n");
+	if (SIG_ERR == signal(SIGTERM, _sig_handler)){
+		fprintf(stderr,"Unable to catch SIGTERM...exiting.\n");
 		exit(CACHE_FAILURE);
 	}
 
-	/* Initializing the cache */
+	/* Cache initialization */
 	simplecache_init(cachedir);
 
-	//Your code here...
+	/* Add your cache code here */
+
 }
