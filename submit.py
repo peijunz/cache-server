@@ -45,6 +45,7 @@ def main():
             		'pr3_readme' : ['readme-student.md']}
 
   quiz = quiz_map[args.quiz]
+  os.chdir(path_map[args.quiz])
 
   submit('cs8803-02', quiz, files_map[quiz])
 
