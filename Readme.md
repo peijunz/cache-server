@@ -189,7 +189,7 @@ robust to misbehaving clients.
 Neither the cache daemon nor the proxy should crash if the other process is not
 started already.   For instance, if the proxy cannot connect to the IPC
 mechanism over which requests are communicated to the cache, then it might
-delay for a second and try again.  The test server will start your cache and
+delay for a second and try again.  The test server will start your cache and proxy
 in different orders.
 
 It is not polite to terminate a process without cleaning up, so the proxy
