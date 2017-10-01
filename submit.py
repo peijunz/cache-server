@@ -32,8 +32,8 @@ def main():
   
   args = parser.parse_args()
 
-  path_map = { 'proxy_server': '.', 
-               'proxy_cache': '.', 
+  path_map = { 'proxy_server': 'server', 
+               'proxy_cache': 'cache', 
                'readme': '.'}
 
   quiz_map = { 'proxy_server': 'pr3_proxy_server', 
@@ -45,6 +45,7 @@ def main():
             		'pr3_readme' : ['readme-student.md']}
 
   quiz = quiz_map[args.quiz]
+  os.chdir(path_map[args.quiz])
 
   submit('cs8803-02', quiz, files_map[quiz])
 

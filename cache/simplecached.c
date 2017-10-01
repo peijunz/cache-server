@@ -27,8 +27,8 @@ static void _sig_handler(int signo){
 "  simplecached [options]\n"                                                  \
 "options:\n"                                                                  \
 "  -c [cachedir]       Path to static files (Default: ./)\n"                  \
-"  -h                  Show this help message\n"                              \
-"  -t [thread_count]   Num worker threads (Default: 1, Range: 1-1000)\n"
+"  -t [thread_count]   Num worker threads (Default: 1, Range: 1-1024)\n"      \
+"  -h                  Show this help message\n"
 
 /* OPTIONS DESCRIPTOR ====================================================== */
 static struct option gLongOptions[] = {
@@ -69,7 +69,8 @@ int main(int argc, char **argv) {
 	}
 
 	if ((nthreads>1024) || (nthreads < 1)) {
-		nthreads = 1;
+		fprintf(stderr, "Invalid number of threads\n");
+		exit(__LINE__);
 	}
 
 	if (SIG_ERR == signal(SIGINT, _sig_handler)){
@@ -87,4 +88,6 @@ int main(int argc, char **argv) {
 
 	/* Add your cache code here */
 
+	/* this code probably won't execute */
+	return 0;
 }
