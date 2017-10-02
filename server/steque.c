@@ -1,5 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <errno.h>
+#include <getopt.h>
+#include <limits.h>
+#include <sys/signal.h>
+#include <printf.h>
+#include <curl/curl.h>
+
 #include "steque.h"
 
 #if !defined(STEQUE_FAILURE)

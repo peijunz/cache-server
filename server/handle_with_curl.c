@@ -1,11 +1,20 @@
 #include <stdlib.h>
-#include <fcntl.h>
-#include <curl/curl.h>
-#include <string.h>
+#include <stdio.h>
 #include <unistd.h>
+#include <string.h>
+#include <fcntl.h>
+#include <signal.h>
 #include <errno.h>
+#include <getopt.h>
+#include <limits.h>
+#include <sys/signal.h>
+#include <printf.h>
+#include <curl/curl.h>
 
 #include "gfserver.h"
+#include "proxy-student.h"
+
+#define BUFSIZE (8803)
 
 //Replace with an implementation of handle_with_curl and any other
 //functions you may need.
@@ -14,7 +23,7 @@ ssize_t handle_with_file(gfcontext_t *ctx, char *path, void* arg){
 	int fildes;
 	size_t file_len, bytes_transferred;
 	ssize_t read_len, write_len;
-	char buffer[4096];
+	char buffer[BUFSIZE];
 	char *data_dir = arg;
 
 	strcpy(buffer,data_dir);
@@ -38,7 +47,7 @@ ssize_t handle_with_file(gfcontext_t *ctx, char *path, void* arg){
 	/* Sending the file contents chunk by chunk. */
 	bytes_transferred = 0;
 	while(bytes_transferred < file_len){
-		read_len = read(fildes, buffer, 4096);
+		read_len = read(fildes, buffer, BUFSIZE);
 		if (read_len <= 0){
 			fprintf(stderr, "handle_with_file read error, %zd, %zu, %zu", read_len, bytes_transferred, file_len );
 			return SERVER_FAILURE;

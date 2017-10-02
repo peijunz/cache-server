@@ -1,13 +1,17 @@
 #include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <errno.h>
 #include <getopt.h>
+#include <limits.h>
+#include <sys/signal.h>
+#include <printf.h>
 
 #include "gfserver.h"
+#include "proxy-student.h"
 
 /* note that the -n and -z parameters are NOT used for Part 1 */
 /* they are only used for Part 2 */                         
@@ -15,11 +19,11 @@
 "usage:\n"                                                                            \
 "  webproxy [options]\n"                                                              \
 "options:\n"                                                                          \
-"  -n [segment_count]  Number of segments to use (Default: 2)\n"                      \
-"  -p [listen_port]    Listen port (Default: 8140)\n"                                 \
-"  -t [thread_count]   Num worker threads (Default: 1, Range: 1-1024)\n"              \
+"  -n [segment_count]  Number of segments to use (Default: 8)\n"                      \
+"  -p [listen_port]    Listen port (Default: 8803)\n"                                 \
+"  -t [thread_count]   Num worker threads (Default: 2, Range: 1-8803)\n"              \
 "  -s [server]         The server to connect to (Default: Udacity S3 instance)\n"     \
-"  -z [segment_size]   The segment size (in bytes, Default: 256).\n"                  \
+"  -z [segment_size]   The segment size (in bytes, Default: 8803).\n"                  \
 "  -h                  Show this help message\n"
 
 
@@ -31,6 +35,7 @@ static struct option gLongOptions[] = {
   {"server",        required_argument,      NULL,           's'},
   {"segment-size",  required_argument,      NULL,           'z'},         
   {"help",          no_argument,            NULL,           'h'},
+  {"hidden",        no_argument,            NULL,           'i'}, /* server side */
   {NULL,            0,                      NULL,            0}
 };
 
@@ -50,10 +55,10 @@ static void _sig_handler(int signo){
 int main(int argc, char **argv) {
   int i;
   int option_char = 0;
-  unsigned short port = 8140;
-  unsigned short nworkerthreads = 1;
-  unsigned int nsegments = 2;
-  size_t segsize = 256;
+  unsigned short port = 8803;
+  unsigned short nworkerthreads = 2;
+  unsigned int nsegments = 8;
+  size_t segsize = 8803;
   char *server = "s3.amazonaws.com/content.udacity-data.com";
 
   /* disable buffering on stdout so it prints immediately */
@@ -70,7 +75,7 @@ int main(int argc, char **argv) {
   }
 
   /* Parse and set command line arguments */
-  while ((option_char = getopt_long(argc, argv, "n:p:s:t:z:h", gLongOptions, NULL)) != -1) {
+  while ((option_char = getopt_long(argc, argv, "in:p:s:t:z:h", gLongOptions, NULL)) != -1) {
     switch (option_char) {
       case 'n': // segment count
         nsegments = atoi(optarg);
@@ -86,6 +91,9 @@ int main(int argc, char **argv) {
         break;
       case 'z': // segment size
         segsize = atoi(optarg);
+        break;
+      case 'i':
+        /* bonnie side only */
         break;
       case 'h': // help
         fprintf(stdout, "%s", USAGE);
@@ -117,7 +125,7 @@ int main(int argc, char **argv) {
     exit(__LINE__);
   }
 
-  if ((nworkerthreads < 1) || (nworkerthreads > 1024)) {
+  if ((nworkerthreads < 1) || (nworkerthreads > 8803)) {
     fprintf(stderr, "Invalid number of worker threads\n");
     exit(__LINE__);
   }
@@ -130,7 +138,7 @@ int main(int argc, char **argv) {
 
   /* This is where you set the options for the server */
   gfserver_setopt(&gfs, GFS_PORT, port);
-  gfserver_setopt(&gfs, GFS_MAXNPENDING, 12);
+  gfserver_setopt(&gfs, GFS_MAXNPENDING, 42);
   gfserver_setopt(&gfs, GFS_WORKER_FUNC, handle_with_file);
   for(i = 0; i < nworkerthreads; i++) {
     gfserver_setopt(&gfs, GFS_WORKER_ARG, i, "data");

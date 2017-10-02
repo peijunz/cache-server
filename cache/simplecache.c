@@ -1,11 +1,20 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
-#include <string.h>
+#include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <fcntl.h>
+#include <signal.h>
+#include <errno.h>
+#include <getopt.h>
+#include <limits.h>
+#include <sys/signal.h>
+#include <printf.h>
+#include <curl/curl.h>
 
-#define MAX_KEYLEN 256
+#include "gfserver.h"
+#include "proxy-student.h"
+
+#define MAX_KEYLEN 1024
 
 #if !defined(CACHE_FAILURE)
 #define CACHE_FAILURE (-1)

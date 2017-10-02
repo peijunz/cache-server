@@ -1,11 +1,18 @@
 #include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#include <signal.h>
-#include <getopt.h>
 #include <stdio.h>
-#include <pthread.h>
+#include <unistd.h>
+#include <string.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <errno.h>
+#include <getopt.h>
+#include <limits.h>
+#include <sys/signal.h>
+#include <printf.h>
+#include <curl/curl.h>
+
+#include "gfserver.h"
+#include "proxy-student.h"
 #include "shm_channel.h"
 #include "simplecache.h"
 
@@ -13,7 +20,7 @@
 #define CACHE_FAILURE (-1)
 #endif // CACHE_FAILURE
 
-#define MAX_CACHE_REQUEST_LEN 1024
+#define MAX_CACHE_REQUEST_LEN 8803
 
 static void _sig_handler(int signo){
 	if (signo == SIGINT || signo == SIGTERM){
@@ -27,14 +34,15 @@ static void _sig_handler(int signo){
 "  simplecached [options]\n"                                                  \
 "options:\n"                                                                  \
 "  -c [cachedir]       Path to static files (Default: ./)\n"                  \
-"  -t [thread_count]   Num worker threads (Default: 1, Range: 1-1024)\n"      \
+"  -t [thread_count]   Thread count for work queue (Default: 2, Range: 1-8803)\n"      \
 "  -h                  Show this help message\n"
 
 /* OPTIONS DESCRIPTOR ====================================================== */
 static struct option gLongOptions[] = {
   {"cachedir",           required_argument,      NULL,           'c'},
-  {"help",               no_argument,            NULL,           'h'},
   {"nthreads",           required_argument,      NULL,           't'},
+  {"help",               no_argument,            NULL,           'h'},
+  {"hidden",			 no_argument,			 NULL,			 'i'}, /* server side */
   {NULL,                 0,                      NULL,             0}
 };
 
@@ -50,7 +58,7 @@ int main(int argc, char **argv) {
 	/* disable buffering to stdout */
 	setbuf(stdout, NULL);
 
-	while ((option_char = getopt_long(argc, argv, "c:ht:", gLongOptions, NULL)) != -1) {
+	while ((option_char = getopt_long(argc, argv, "ic:ht:", gLongOptions, NULL)) != -1) {
 		switch (option_char) {
 			case 'c': //cache directory
 				cachedir = optarg;
@@ -62,13 +70,15 @@ int main(int argc, char **argv) {
 			case 't': // thread-count
 				nthreads = atoi(optarg);
 				break;   
+			case 'i': // server side usage
+				break;
 			default:
 				Usage();
 				exit(1);
 		}
 	}
 
-	if ((nthreads>1024) || (nthreads < 1)) {
+	if ((nthreads>8803) || (nthreads < 1)) {
 		fprintf(stderr, "Invalid number of threads\n");
 		exit(__LINE__);
 	}

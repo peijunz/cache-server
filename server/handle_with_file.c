@@ -1,12 +1,20 @@
 #include <stdlib.h>
-#include <fcntl.h>
-#include <string.h>
+#include <stdio.h>
 #include <unistd.h>
+#include <string.h>
+#include <fcntl.h>
+#include <signal.h>
 #include <errno.h>
+#include <getopt.h>
+#include <limits.h>
+#include <sys/signal.h>
+#include <printf.h>
 #include <curl/curl.h>
-#include "gfserver.h"
 
-#define BUFSIZE (4096)
+#include "gfserver.h"
+#include "proxy-student.h"
+
+#define BUFSIZE (8803)
 
 ssize_t handle_with_file(gfcontext_t *ctx, char *path, void* arg){
 	int fildes;
