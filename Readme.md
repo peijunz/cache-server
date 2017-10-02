@@ -18,21 +18,24 @@ cache built from your own source code.
 You can clone the code in this repository with the command:
 
 ```
-git clone https://github.gatech.edu/gios-sum-2017/gios-summer2017-pr3.git
+git clone https://github.gatech.edu/gios-fall-2017/gios-fall2017-pr3.git
 
 ```
 
-Note: if you choose to **fork** the repository, please remove the class access
-to it.  You can do this by going to the "Settings" (on github.gatech.edu) for
-your repository.  On the left there is a tab for "Collaborators and Teams".  When
-you choose this it will show the class team membership.  Simply remove it (there is
-an "x" on the right hand side).   Your repository is now private and only accessible
-to you and class instructors.
+Note: _if_ you choose to **fork** the repository (you are not required to do so,) 
+please remove the class access to it.  You can do this by going to the "Settings" 
+(on github.gatech.edu) for your repository.  On the left there is a tab for 
+"Collaborators and Teams".  When you choose this it will show the class team
+membership.  Simply remove it (there is an "x" on the right hand side).   Your
+repository is now private and only accessible to you and class instructors.
+
+![Remove Team Access](docs/PR3Settings05.png)
+
 
 **If you do not remove team access, your code is visible to everyone in class.  This
 is the same as sharing your code.**
 
-##Submission Instructions
+## Submission Instructions
 All code should be submitted through the submit.py script given at the top
 level of this repository.  For instructions on how to submit individual
 components of the assignment see the instructions below.  You may submit as
@@ -44,7 +47,7 @@ After submitting, you may double-check the results of your submission by
 visiting the [Udacity/GT autograding website](https://bonnie.udacity.com) and
 going to the student portal.
 
-##README
+## README
 Throughout the project, we encourage you to keep notes on what you have done,
 how you have approached each part of the project and what resources you used in
 preparing your work.  We have provided you with a prototype file,
@@ -321,7 +324,7 @@ code will be tested with Address Sanitizer enabled.
 
 ### Extra Credit (+10 points)
 
-- Modify Project 1 to integrate the Project 3 components, and submit via T-square
+- Modify Project 1 to integrate the Project 3 components, and submit via **T-square**
 
 To receive credit for this portion, your code must build and run as provided. We
 will not do any corrective programming, copy any additional files, or take any
