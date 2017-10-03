@@ -10,6 +10,8 @@
 #include <sys/signal.h>
 #include <printf.h>
 #include <curl/curl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "gfserver.h"
 #include "proxy-student.h"
@@ -22,6 +24,7 @@ ssize_t handle_with_file(gfcontext_t *ctx, char *path, void* arg){
 	ssize_t read_len, write_len;
 	char buffer[BUFSIZE];
 	char *data_dir = arg;
+	struct stat statbuf;
 
 	strncpy(buffer,data_dir, BUFSIZE);
 	strncat(buffer,path, BUFSIZE);
@@ -36,8 +39,11 @@ ssize_t handle_with_file(gfcontext_t *ctx, char *path, void* arg){
 	}
 
 	/* Calculating the file size */
-	file_len = lseek(fildes, 0, SEEK_END);
-	lseek(fildes, 0, SEEK_SET);
+	if (0 > fstat(fildes, &statbuf)) {
+		return SERVER_FAILURE;
+	}
+
+	file_len = (size_t) statbuf.st_size;
 
 	gfs_sendheader(ctx, GF_OK, file_len);
 

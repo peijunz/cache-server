@@ -39,7 +39,6 @@ static struct option gLongOptions[] = {
   {NULL,            0,                      NULL,            0}
 };
 
-extern ssize_t handle_with_file(gfcontext_t *ctx, char *path, void* arg);
 extern ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg);
 
 static gfserver_t gfs;
@@ -139,7 +138,7 @@ int main(int argc, char **argv) {
   /* This is where you set the options for the server */
   gfserver_setopt(&gfs, GFS_PORT, port);
   gfserver_setopt(&gfs, GFS_MAXNPENDING, 42);
-  gfserver_setopt(&gfs, GFS_WORKER_FUNC, handle_with_file);
+  gfserver_setopt(&gfs, GFS_WORKER_FUNC, handle_with_cache);
   for(i = 0; i < nworkerthreads; i++) {
     gfserver_setopt(&gfs, GFS_WORKER_ARG, i, "data");
   }

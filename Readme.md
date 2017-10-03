@@ -69,7 +69,7 @@ The Udacity site will store your **readme-student.md** file in a database.
 This will be used during grading.  The submit script will acknowledge receipt
 of your README file.
 
->>For this and all assignments, you may submit your code as many times as you like.  After the deadline,  we download your last submission prior to the deadline, review your submission and assign a grade.
+> For this assignment, you may submit your code up to 10 times in a 24 hour period. After the deadline, we download your last submission prior to the deadline, review your submission and assign a grade.
 
 ## Part 1
 
@@ -93,19 +93,24 @@ Do not encode this URL into your code or it should fail in the auto-grader.
 
 Here is a summary of the relevant files and their roles.
 
-- **Makefile** - (do not modify) file used to compile the code.  Run `make webproxy` to compile your code.
+- **Makefile** - (do not modify) file used to compile the code.  Run `make` to compile your code.
 
 - **gfserver.h** - (do not modify) header file for the library that interacts with the getfile client.
 
 - **gfserver.o** - (do not modify) object file for the library that interacts with the getfile client.
 
-- **handle_with_curl.c** - (modify) implement the handle_with_curl function here using the libcurl library.  On a 404 from the webserver, this function should return a header with a Getfile status of GF_FILE_NOT_FOUND.
+- **handle_with_curl.c** - (modify) implement the handle_with_curl function here using the libcurl library.  On a 404 from the webserver, this function should return a header with a Getfile status of `GF_FILE_NOT_FOUND`.
 
 - **handle_with_file.c** - (not submitted) illustrates how to use the gfserver library with an example.
 
 - **gfclient_download** - a binary executable that serves as a workload generator for the proxy.  It downloads the requested files, using the current directory as a prefix for all paths. Note you must specify the correct port to use.
 
 - **gfclient_measure** - a binary executable that serves as a workload generator for the proxy.  It measures the performance of the proxy, writing one entry in the metrics file for each chunk of data received. Note you must specify the correct port to use.
+
+- **proxy-student.h** - (submitted) you may use this header file to store any content you desire.  If you do not wish to do so,
+you can ignore this file.
+
+- **steque.[ch]** - (do not modify) you may find this steque (stack and queue) data useful in implementing the the cache.
 
 - **webproxy.c** - (modify) this is the main file for the webproxy program.  Only small modifications are necessary.
 
@@ -202,11 +207,12 @@ Here is a summary of the relevant files and their roles.
 
 - **handle_with_cache.c** - (modify) implement the handle_with_cache function here.  It should use one of the IPC mechanisms discussed to communicate with the simplecached process to obtain the file contents.  You may also need to add an initialization function that can be called from webproxy.c
 
-- **handle_with_file.c** - (not submitted) illustrates how to use the gfserver library with an example.
-
 - **locals.txt** - (not submitted) a file telling the simplecache where to look for its contents.
 
-- **Makefile** - (do not modify) file used to compile the code.  Run `make webproxy` to compile your code.
+- **Makefile** - (do not modify) file used to compile the code.  Run `make` to compile your code.
+
+- **proxy-student.h** - (modify) this optional header file may be used by you, and included in any of the submitted files.  Its use
+is optional, but it is there in case you would like to use it.
 
 - **shm_channel.[ch]** - (modify) you may use these files to implement whatever protocol for the IPC you decide upon (e.g., use of designated socket-based communication, message queue, or shared memory ).
 
