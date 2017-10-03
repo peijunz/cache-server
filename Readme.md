@@ -232,28 +232,6 @@ Once you have completed your program you can submit it __from the top level proj
 ```
 python submit.py proxy_cache
 ```
-
-## Extra Credit
-Integrate the code you wrote from the first two parts into your source code
-from Project 1 to build a complete getfile-to-http proxy server with cache.
-Turn into T-square a zip file with all of the source code and a README file
-that documents your code and how to compile and run it.
-
-## References
-### Relevant Lecture Material
-- P3L3 Inter-Process Communication
-  - SysV Shared Memory API
-  - POSIX Shared Memory API
-
-### Sample Source Code
-- [Signal Handling Code Example](http://www.thegeekstuff.com/2012/03/catch-signals-sample-c-code/)
-- [Libcurl Code Example](https://www.hackthissite.org/articles/read/1078)
-
-### Address Sanitizer
-Note that address sanitizer is enabled in the test server as well as the
-project Makefile.  To fully exploit this, you may need to set further options
-for your environment.
-
 ## Extra Credit
 
 Integrate the code you wrote from the first two parts into your source code
@@ -331,5 +309,3 @@ will not do any corrective programming, copy any additional files, or take any
 special steps to make your code work properly.
 
 **Make sure it works "out of the box".**
-
-
