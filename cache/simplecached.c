@@ -51,7 +51,7 @@ void Usage() {
 }
 
 int main(int argc, char **argv) {
-	int nthreads = 1;
+	int nthreads = 2;
 	char *cachedir = "locals.txt";
 	char option_char;
 
