@@ -16,26 +16,60 @@
 
 #define BUFSIZE (8803)
 
+size_t send_chunk(void *ptr, size_t size, size_t nmemb, void *data){
+    size_t realsize = size*nmemb;
+    gfcontext_t *ctx =(gfcontext_t *)data;
+    ssize_t write_len = gfs_send(ctx, (char*)ptr, realsize);
+    if(write_len!=(ssize_t)realsize){
+        fprintf(stderr, "Send chunk error\n");
+        return 0;
+    }
+    return realsize;
+}
 /*
- * Replace with an implementation of handle_with_curl and any other
- * functions you may need.
+ * Use libcurl to intercept received data of libcurl and send it to server
  */
-ssize_t handle_with_curl(gfcontext_t *ctx, char *path, void* arg){
-	(void) ctx;
-	(void) path;
-	(void) arg;
+ssize_t handle_with_curl(gfcontext_t *ctx, char *path, void* arg) {
+    char buffer[BUFSIZE];
+    curl_global_init(CURL_GLOBAL_ALL);
+    CURL * myHandle = curl_easy_init();
+    CURLcode result;
+    double length;
+    long status;
 
-	/* not implemented */
-	errno = ENOSYS;
-	return -1;
+    strncpy(buffer, (char *)arg, BUFSIZE);
+    strncat(buffer, path, BUFSIZE);
+    curl_easy_setopt(myHandle, CURLOPT_HEADER, 1);
+    curl_easy_setopt(myHandle, CURLOPT_NOBODY, 1);
+    curl_easy_setopt(myHandle, CURLOPT_URL, buffer);
+    result = curl_easy_perform(myHandle);
+    if(result==CURLE_OK){
+        curl_easy_getinfo(myHandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &length);
+        curl_easy_getinfo(myHandle, CURLINFO_RESPONSE_CODE, &status);
+    }
+    else{
+        fprintf(stderr, "Error happened during curl_easy_perform of header\n");
+        return -1;
+    }
+
+    if(status>=400){
+        gfs_sendheader(ctx, GF_FILE_NOT_FOUND, 0);
+    }
+    else{
+        gfs_sendheader(ctx, GF_OK, (size_t)length);
+    }
+//    curl_easy_setopt(myHandle, CURLOPT_URL, buffer);
+    curl_easy_setopt(myHandle, CURLOPT_HEADER, 0);
+    curl_easy_setopt(myHandle, CURLOPT_NOBODY, 0);
+    curl_easy_setopt(myHandle, CURLOPT_WRITEFUNCTION, send_chunk);
+    curl_easy_setopt(myHandle, CURLOPT_WRITEDATA, (void *)ctx);
+    result = curl_easy_perform(myHandle);
+    if(result!=CURLE_OK){
+        fprintf(stderr, "Error happened during curl_easy_perform\n");
+        return -1;
+    }
+    curl_easy_cleanup(myHandle);
+    curl_global_cleanup();
+    return (ssize_t)length;
 }
 
-
-/*
- * We provide a dummy version of handle_with_file that invokes handle_with_curl
- * as a convenience for linking.  We recommend you simply modify the proxy to
- * call handle_with_curl directly.
- */
-ssize_t handle_with_file(gfcontext_t *ctx, char *path, void* arg){
-	return handle_with_curl(ctx, path, arg);
-}	
