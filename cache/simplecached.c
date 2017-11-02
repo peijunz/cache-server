@@ -10,6 +10,7 @@
 #include <sys/signal.h>
 #include <printf.h>
 #include <curl/curl.h>
+#include <sys/msg.h>
 
 #include "gfserver.h"
 #include "proxy-student.h"
@@ -48,6 +49,60 @@ static struct option gLongOptions[] = {
 
 void Usage() {
   fprintf(stdout, "%s", USAGE);
+}
+
+static int msqid;
+
+void serve_cache(){
+    req_msg msg;
+    cache_p cblock;
+    int fd;
+    ssize_t filelen, readlen, datalen, transfered=0;
+    while(1){
+        if (msgrcv(msqid, &msg, sizeof(msg.req), 0, 0) == -1) {
+            perror("msgrcv");
+            exit(1);
+        }
+        printf("Received request key: %s", msg.req.path);
+        cblock = (cache_p) shmat(msg.req.shmd, (void *)0, 0);
+        fd = simplecache_get(msg.req.path);
+        datalen = data_length(msg.req.segsize);
+        filelen=lseek(fd, 0, SEEK_END);
+
+        pthread_mutex_lock(&cblock->meta.m);
+        while(cblock->meta.status == READABLE){
+            pthread_cond_wait(&cblock->meta.writable, &cblock->meta.m);
+        }
+        cblock->meta.filelen = (size_t)filelen;
+        cblock->meta.status = READABLE;
+        pthread_mutex_unlock(&cblock->meta.m);
+        pthread_cond_signal(&cblock->meta.readable);
+
+        while(transfered<filelen){
+            pthread_mutex_lock(&cblock->meta.m);
+            while(cblock->meta.status == READABLE){
+                pthread_cond_wait(&cblock->meta.writable, &cblock->meta.m);
+            }
+            readlen = read(fd, cblock->data, (size_t)datalen);
+            if (readlen <= 0){
+                fprintf(stderr, "handle_with_file read error, %zd, %zu, %zu", readlen, transfered, filelen );
+                return;
+            }
+            transfered += readlen;
+            cblock->meta.readlen = (size_t)readlen;
+            cblock->meta.status = READABLE;
+            pthread_mutex_unlock(&cblock->meta.m);
+            pthread_cond_signal(&cblock->meta.readable);
+        }
+    }
+}
+
+void spawn(int n){
+    pthread_t tid;
+    for (int i=0;i<n;i++){
+        pthread_create(&tid, NULL, serve_cache, NULL);
+    }
+    printf("Threads spawned!\n");
 }
 
 int main(int argc, char **argv) {
@@ -96,8 +151,13 @@ int main(int argc, char **argv) {
 	/* Cache initialization */
 	simplecache_init(cachedir);
 
-	/* Add your cache code here */
-
-	/* this code probably won't execute */
-	return 0;
+    msqid = getmsqid();
+    spawn(nthreads);
+    /* this code probably won't execute */
+    if (msgctl(msqid, IPC_RMID, NULL) == -1) {
+        perror("msgctl");
+        exit(1);
+    }
+    simplecache_destroy();
+    return 0;
 }

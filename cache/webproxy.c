@@ -9,7 +9,9 @@
 #include <limits.h>
 #include <sys/signal.h>
 #include <printf.h>
-
+#include <sys/msg.h>
+#include <sys/shm.h>
+#include "shm_channel.h"
 #include "gfserver.h"
 #include "proxy-student.h"
 
@@ -40,6 +42,8 @@ static struct option gLongOptions[] = {
 };
 
 extern ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg);
+extern int shm_push(int shmd);
+extern void init_handlers(int);
 
 static gfserver_t gfs;
 
@@ -130,8 +134,29 @@ int main(int argc, char **argv) {
   }
 
 
-  /* This is where you initialize your shared memory */ 
-
+  /* This is where you initialize your shared memory 初始化内存*/
+  key_t key;
+  int shmid;
+  char buffer[200];
+  init_handlers((int)segsize);
+  if (data_length(segsize)<128) {
+    fprintf(stderr, "Segment size %lu smaller than metadata size %lu+128!\n", segsize, sizeof (metadata));
+    exit(__LINE__);
+  }
+  for(uint i=0;i<nsegments;i++){
+      /* make the key: */
+      sprintf(buffer, "/tmp/shm-proxy-%d", i);
+      if ((key = ftok(buffer, 'R')) == -1) {
+          perror("ftok");
+          exit(1);
+      }
+      /* connect to (and possibly create) the segment: */
+      if ((shmid = shmget(key, segsize, 0644 | IPC_CREAT)) == -1) {
+          perror("shmget");
+          exit(1);
+      }
+      shm_push(shmid);
+  }
   /* This is where you initialize the server struct */
   gfserver_init(&gfs, nworkerthreads);
 
@@ -140,7 +165,7 @@ int main(int argc, char **argv) {
   gfserver_setopt(&gfs, GFS_MAXNPENDING, 42);
   gfserver_setopt(&gfs, GFS_WORKER_FUNC, handle_with_cache);
   for(i = 0; i < nworkerthreads; i++) {
-    gfserver_setopt(&gfs, GFS_WORKER_ARG, i, "data");
+    gfserver_setopt(&gfs, GFS_WORKER_ARG, i, server);
   }
   
   /* This is where you invoke the framework to run the server */

@@ -39,7 +39,6 @@ ssize_t handle_with_curl(gfcontext_t *ctx, char *path, void* arg) {
 
     strncpy(buffer, (char *)arg, BUFSIZE);
     strncat(buffer, path, BUFSIZE);
-    curl_easy_setopt(myHandle, CURLOPT_HEADER, 1);
     curl_easy_setopt(myHandle, CURLOPT_NOBODY, 1);
     curl_easy_setopt(myHandle, CURLOPT_URL, buffer);
     result = curl_easy_perform(myHandle);
@@ -58,8 +57,6 @@ ssize_t handle_with_curl(gfcontext_t *ctx, char *path, void* arg) {
     else{
         gfs_sendheader(ctx, GF_OK, (size_t)length);
     }
-//    curl_easy_setopt(myHandle, CURLOPT_URL, buffer);
-    curl_easy_setopt(myHandle, CURLOPT_HEADER, 0);
     curl_easy_setopt(myHandle, CURLOPT_NOBODY, 0);
     curl_easy_setopt(myHandle, CURLOPT_WRITEFUNCTION, send_chunk);
     curl_easy_setopt(myHandle, CURLOPT_WRITEDATA, (void *)ctx);
