@@ -30,6 +30,7 @@ static void _sig_handler(int signo){
             destroy_msg(msqid);
             msqid = -1;
         }
+        printf("Cache killed by signal %d\n", signo);
 		exit(signo);
 	}
 }
@@ -72,43 +73,47 @@ void* serve_cache(void*arg){
 //            perror("shmget");
 //            exit(1);
 //        }
-        printf("Received request key %s with memory id %d\n", msg.req.path, msg.req.shmid);
+        printf(">>> Cache request %s with shmid %d\n", msg.req.path, msg.req.shmid);
         cblock = (cache_p) shmat(msg.req.shmid, (void *)0, 0);
         datalen = data_length(msg.req.segsize);
         transfered = 0;
         if((fd = simplecache_get(msg.req.path))<0){
             filelen=-1;
-            printf("File does not exist in cache!\n");
+            printf("    File does not exist in cache!\n");
         }
         else{
             filelen=lseek(fd, 0, SEEK_END);
             lseek(fd, 0, SEEK_SET);
         }
-        printf("Get fd of %s with size %zd\n", msg.req.path, filelen);
+//        printf(">>> Get fd of %s with size %zd\n", msg.req.path, filelen);
         pthread_mutex_lock(&cblock->meta.m);
         while(cblock->meta.status == READABLE){
             pthread_cond_wait(&cblock->meta.writable, &cblock->meta.m);
         }
         cblock->meta.filelen = filelen;
-        if(filelen<0){
+        if(filelen<=0){
             cblock->meta.status=READABLE;
         }
         pthread_mutex_unlock(&cblock->meta.m);
-        if(filelen<0){
+        if(filelen<=0){
             pthread_cond_signal(&cblock->meta.readable);
         }
 
-        printf("Metadata set! Starting transfer...\n");
+//        printf("Metadata set! Starting transfer...\n");
         while(transfered<filelen){
             pthread_mutex_lock(&cblock->meta.m);
             while(cblock->meta.status == READABLE){
                 pthread_cond_wait(&cblock->meta.writable, &cblock->meta.m);
             }
-            readlen = read(fd, cblock->data, (size_t)datalen);
+            readlen = pread(fd, cblock->data, (size_t)datalen, transfered);
 //            printf("Read: %.40s...\n", cblock->data);
-            if (readlen <= 0){
+            if (readlen < 0){
                 fprintf(stderr, "handle_with_file read error, %zd, %zu, %zu", readlen, transfered, filelen );
+                perror("pread: ");
                 return NULL;
+            }
+            else if(readlen == 0){
+
             }
             transfered += readlen;
 //            printf("Read %zd bytes, transfered %zu, filelen %zu\n", readlen, transfered, filelen);
@@ -117,11 +122,11 @@ void* serve_cache(void*arg){
             pthread_mutex_unlock(&cblock->meta.m);
             pthread_cond_signal(&cblock->meta.readable);
         }
-        printf(">>> Successfully sent cached file!\n");
+        printf("<<< Successfully sent cached %s!\n", msg.req.path);
         if(shmdt(cblock)<0){
-            perror("shmdt");
+            perror("shmdt:");
         }
-        printf(">>> Successfully detached shared memory block!\n");
+//        printf(">>> Successfully detached shared memory block!\n");
     }
 }
 

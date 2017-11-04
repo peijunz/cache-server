@@ -30,7 +30,7 @@ static pthread_cond_t shm_available=PTHREAD_COND_INITIALIZER;
 int shm_push(int key){
     int* p=(int*)malloc(sizeof (int));
     *p = key;
-    printf("Allocated\n");
+//    printf("Allocated\n");
     pthread_mutex_lock(&m);
     steque_enqueue(&Q, p);
     pthread_mutex_unlock(&m);
@@ -49,7 +49,7 @@ int shm_pop(){
     pthread_mutex_unlock(&m);
     key=*p;
     free(p);
-    printf("Freed\n");
+//    printf("Freed\n");
     return key;
 }
 
@@ -94,7 +94,6 @@ void init_handlers(int seg_size, int nsegments){
 }
 void stop_handlers(){
     int shmid;
-    printf("Entering stop_handler\n");
     if(msqid != -1){
         destroy_msg(msqid);
         msqid = -1;
@@ -117,7 +116,7 @@ ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg){
     //Setup lock of shared memory
     cblock = (cache_p) shmat(shmid, (void *)0, 0);
     init_cache_block(cblock);
-    printf("Got shmid %d from quene\n", shmid);
+    printf(">>> File request %s with shmid %d\n", path, shmid);
     request_cache(path, (char*)arg, shmid);
 
     pthread_mutex_lock(&cblock->meta.m);
@@ -129,12 +128,12 @@ ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg){
     pthread_mutex_unlock(&cblock->meta.m);
 //    pthread_cond_signal(&cblock->meta.writable);
     if(file_len < 0){
-        printf("File does not exist in cache!\n");
+        printf("    File does not exist in cache!\n");
         gfs_sendheader(ctx, GF_FILE_NOT_FOUND, 0);
     }
     else{
         gfs_sendheader(ctx, GF_OK, (size_t)file_len);
-        printf("Header sent!\n");
+//        printf("Header sent!\n");
     }
     bytes_transferred = 0;
 
@@ -158,12 +157,12 @@ ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg){
        pthread_cond_signal(&cblock->meta.writable);
    }
    if(shmdt(cblock)<0){
-       perror("shmdt");
+       perror("shmdt:");
    }
-   else{
-       printf("Detached shared memory\n");
-   }
+//   else{
+//       printf("Detached shared memory\n");
+//   }
    shm_push(shmid);
-   printf(">>> Successfully transfered file %s!\n", path);
+   printf("<<< Successfully transfered file %s!\n", path);
    return (ssize_t)bytes_transferred;
 }

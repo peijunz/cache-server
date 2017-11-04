@@ -50,9 +50,8 @@ static gfserver_t gfs;
 static void _sig_handler(int signo){
   if (signo == SIGINT || signo == SIGTERM){
     gfserver_stop(&gfs);
-    printf("Stop Handler\n");
     stop_handlers();
-    printf("After Stop Handler\n");
+    printf("Proxy killed by signal %d\n", signo);
     exit(signo);
   }
 }
