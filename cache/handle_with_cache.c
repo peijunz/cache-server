@@ -30,6 +30,7 @@ static pthread_cond_t shm_available=PTHREAD_COND_INITIALIZER;
 int shm_push(shm_item it){
     shm_p p=(shm_p)malloc(sizeof (shm_item));
     *p = it;
+    printf("Allocated\n");
     pthread_mutex_lock(&m);
     steque_enqueue(&Q, p);
     pthread_mutex_unlock(&m);
@@ -48,6 +49,7 @@ shm_item shm_pop(){
     pthread_mutex_unlock(&m);
     it=*p;
     free(p);
+    printf("Freed\n");
     return it;
 }
 
@@ -58,20 +60,49 @@ void request_cache(char *path, char *data_dir, key_t key){
     msg.req.segsize=segsize;
 //    strcpy(msg.req.path, data_dir);//As we are using cache
     strcpy(msg.req.path, path);
-    if (msgsnd(msqid, &msg, sizeof(msg.req), 0) == -1) /* +1 for '\0' */
+    if (msgsnd(msqid, &msg, sizeof(msg.req), 0) == -1){
         perror("msgsnd");
+        exit(1);
+    }
 }
-void init_handlers(int seg_size){
-    steque_init(&Q);
+void init_handlers(int seg_size, int nsegments){
+    shm_item it;
+    char buffer[200];
     msqid = getmsqid();
     segsize = seg_size;
     blocksize = data_length(segsize);
+    steque_init(&Q);
+    for(int i=0;i<nsegments;i++){
+        /* make the key: */
+        sprintf(buffer, "shm-file-%d", i);
+        if (open(buffer, O_CREAT, 0777)==-1) {
+           perror("open");
+           exit(1);
+        }
+        if ((it.key = ftok(buffer, 'R')) == -1) {
+            perror("ftok");
+            exit(1);
+        }
+        /* connect to (and possibly create) the segment: */
+        if ((it.shmid = shmget(it.key, segsize, 0644 | IPC_CREAT)) == -1) {
+            perror("shmget");
+            exit(1);
+        }
+        shm_push(it);
+    }
 }
 void stop_handlers(){
-    steque_destroy(&Q);
+    shm_item it;
+    printf("Entering stop_handler\n");
     if(msqid != -1){
         destroy_msg(msqid);
+        msqid = -1;
     }
+    while (steque_size(&Q)) {
+        it = shm_pop();
+        shmctl(it.shmid, IPC_RMID, 0);
+    }
+    steque_destroy(&Q);
 }
 ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg){
     //单个线程，仅仅负责读取共享内存并发送信息
@@ -98,11 +129,13 @@ ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg){
 //    pthread_cond_signal(&cblock->meta.writable);
     if(file_len < 0){
         printf("File does not exist in cache!\n");
-        return gfs_sendheader(ctx, GF_FILE_NOT_FOUND, 0);
+        gfs_sendheader(ctx, GF_FILE_NOT_FOUND, 0);
     }
-   gfs_sendheader(ctx, GF_OK, (size_t)file_len);
-   bytes_transferred = 0;
-   printf("Header sent!\n");
+    else{
+        gfs_sendheader(ctx, GF_OK, (size_t)file_len);
+        printf("Header sent!\n");
+    }
+    bytes_transferred = 0;
 
    while(bytes_transferred < file_len){
        pthread_mutex_lock(&cblock->meta.m);

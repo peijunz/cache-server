@@ -40,6 +40,6 @@ typedef struct{
 
 int getmsqid(void);
 void init_cache_block(cache_p cblock);
-int destroy_msg(int msg_qid);
+void destroy_msg(int msg_qid);
 ssize_t data_length(int segs);
 #endif // __SHM_CHANNEL_H__

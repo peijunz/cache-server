@@ -15,7 +15,7 @@ int getmsqid(){
     return msg_qid;
 }
 
-int destroy_msg(int msg_qid){
+void destroy_msg(int msg_qid){
     if(msgctl(msg_qid, IPC_RMID, NULL)==-1){
         perror("msgctl");
     }

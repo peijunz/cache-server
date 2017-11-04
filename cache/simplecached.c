@@ -28,6 +28,7 @@ static void _sig_handler(int signo){
 		/* Unlink IPC mechanisms here*/
         if (msqid != -1){
             destroy_msg(msqid);
+            msqid = -1;
         }
 		exit(signo);
 	}
@@ -67,12 +68,12 @@ void* serve_cache(void*arg){
             perror("msgrcv");
             exit(1);
         }
-        printf("Received request key %s with memory key %d\n", msg.req.path, msg.req.key);
         /* connect to (and possibly create) the segment: */
         if ((shmid = shmget(msg.req.key, msg.req.segsize, 0644 | IPC_CREAT)) == -1) {
             perror("shmget");
             exit(1);
         }
+        printf("Received request key %s with memory key %d, id %d\n", msg.req.path, msg.req.key, shmid);
         cblock = (cache_p) shmat(shmid, (void *)0, 0);
         datalen = data_length(msg.req.segsize);
         transfered = 0;
