@@ -42,9 +42,8 @@ static struct option gLongOptions[] = {
 };
 
 extern ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg);
-extern int shm_push(shm_item it);
 extern void init_handlers(int, int);
-extern void stop_handlers();
+extern void stop_handlers(void);
 
 static gfserver_t gfs;
 

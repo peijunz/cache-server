@@ -27,9 +27,9 @@ static steque_t Q;
 static pthread_mutex_t m=PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t shm_available=PTHREAD_COND_INITIALIZER;
 
-int shm_push(shm_item it){
-    shm_p p=(shm_p)malloc(sizeof (shm_item));
-    *p = it;
+int shm_push(int key){
+    int* p=(int*)malloc(sizeof (int));
+    *p = key;
     printf("Allocated\n");
     pthread_mutex_lock(&m);
     steque_enqueue(&Q, p);
@@ -38,25 +38,25 @@ int shm_push(shm_item it){
     return 0;
 }
 
-shm_item shm_pop(){
-    shm_p p;
-    shm_item it;
+int shm_pop(){
+    int* p;
+    int key;
     pthread_mutex_lock(&m);
     while(!steque_size(&Q)){
         pthread_cond_wait(&shm_available, &m);
     }
     p=steque_pop(&Q);
     pthread_mutex_unlock(&m);
-    it=*p;
+    key=*p;
     free(p);
     printf("Freed\n");
-    return it;
+    return key;
 }
 
-void request_cache(char *path, char *data_dir, key_t key){
+void request_cache(char *path, char *data_dir, int shmid){
     req_msg msg;
     msg.mtype = 1;
-    msg.req.key = key;
+    msg.req.shmid = shmid;
     msg.req.segsize=segsize;
 //    strcpy(msg.req.path, data_dir);//As we are using cache
     strcpy(msg.req.path, path);
@@ -66,7 +66,8 @@ void request_cache(char *path, char *data_dir, key_t key){
     }
 }
 void init_handlers(int seg_size, int nsegments){
-    shm_item it;
+    int shmid;
+    key_t key;
     char buffer[200];
     msqid = getmsqid();
     segsize = seg_size;
@@ -79,28 +80,28 @@ void init_handlers(int seg_size, int nsegments){
            perror("open");
            exit(1);
         }
-        if ((it.key = ftok(buffer, 'R')) == -1) {
+        if ((key = ftok(buffer, 'R')) == -1) {
             perror("ftok");
             exit(1);
         }
         /* connect to (and possibly create) the segment: */
-        if ((it.shmid = shmget(it.key, segsize, 0644 | IPC_CREAT)) == -1) {
+        if ((shmid = shmget(key, segsize, 0644 | IPC_CREAT)) == -1) {
             perror("shmget");
             exit(1);
         }
-        shm_push(it);
+        shm_push(shmid);
     }
 }
 void stop_handlers(){
-    shm_item it;
+    int shmid;
     printf("Entering stop_handler\n");
     if(msqid != -1){
         destroy_msg(msqid);
         msqid = -1;
     }
     while (steque_size(&Q)) {
-        it = shm_pop();
-        shmctl(it.shmid, IPC_RMID, 0);
+        shmid = shm_pop();
+        shmctl(shmid, IPC_RMID, 0);
     }
     steque_destroy(&Q);
 }
@@ -110,14 +111,14 @@ ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg){
     //之后一段一段的
     ssize_t read_len, file_len, bytes_transferred, remain;
     ssize_t write_len;
-    shm_item it = shm_pop();
+    int shmid = shm_pop();
     cache_p cblock;
 
     //Setup lock of shared memory
-    cblock = (cache_p) shmat(it.shmid, (void *)0, 0);
+    cblock = (cache_p) shmat(shmid, (void *)0, 0);
     init_cache_block(cblock);
-    printf("Got key %d and shmid %d from quene\n", it.key, it.shmid);
-    request_cache(path, (char*)arg, it.key);
+    printf("Got shmid %d from quene\n", shmid);
+    request_cache(path, (char*)arg, shmid);
 
     pthread_mutex_lock(&cblock->meta.m);
     while(cblock->meta.status == WRITABLE){
@@ -162,7 +163,7 @@ ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg){
    else{
        printf("Detached shared memory\n");
    }
-   shm_push(it);
+   shm_push(shmid);
    printf(">>> Successfully transfered file %s!\n", path);
    return (ssize_t)bytes_transferred;
 }

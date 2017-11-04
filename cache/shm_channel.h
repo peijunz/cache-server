@@ -11,16 +11,11 @@
 typedef struct{
     long mtype;
     struct {
-        key_t key;
+        int shmid;
         int segsize;
         char path[200];
     } req;
 } req_msg;
-
-typedef struct{
-    int shmid;
-    key_t key;
-} shm_item, *shm_p;
 
 #define WRITABLE 0
 #define READABLE 1

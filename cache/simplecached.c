@@ -62,19 +62,18 @@ void* serve_cache(void*arg){
     cache_p cblock;
     int fd;
     ssize_t filelen, readlen, datalen, transfered;
-    int shmid;
     while(1){
         if (msgrcv(msqid, &msg, sizeof(msg.req), 1, 0) == -1) {
             perror("msgrcv");
             exit(1);
         }
         /* connect to (and possibly create) the segment: */
-        if ((shmid = shmget(msg.req.key, msg.req.segsize, 0644 | IPC_CREAT)) == -1) {
-            perror("shmget");
-            exit(1);
-        }
-        printf("Received request key %s with memory key %d, id %d\n", msg.req.path, msg.req.key, shmid);
-        cblock = (cache_p) shmat(shmid, (void *)0, 0);
+//        if ((shmid = shmget(msg.req.key, msg.req.segsize, 0644 | IPC_CREAT)) == -1) {
+//            perror("shmget");
+//            exit(1);
+//        }
+        printf("Received request key %s with memory id %d\n", msg.req.path, msg.req.shmid);
+        cblock = (cache_p) shmat(msg.req.shmid, (void *)0, 0);
         datalen = data_length(msg.req.segsize);
         transfered = 0;
         if((fd = simplecache_get(msg.req.path))<0){
