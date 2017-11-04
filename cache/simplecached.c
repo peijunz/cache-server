@@ -22,10 +22,13 @@
 #endif // CACHE_FAILURE
 
 #define MAX_CACHE_REQUEST_LEN 8803
-
+static int msqid;
 static void _sig_handler(int signo){
 	if (signo == SIGINT || signo == SIGTERM){
 		/* Unlink IPC mechanisms here*/
+        if (msqid != -1){
+            destroy_msg(msqid);
+        }
 		exit(signo);
 	}
 }
@@ -51,58 +54,85 @@ void Usage() {
   fprintf(stdout, "%s", USAGE);
 }
 
-static int msqid;
+static int msqid=-1;
 
-void serve_cache(){
+void* serve_cache(void*arg){
     req_msg msg;
     cache_p cblock;
     int fd;
-    ssize_t filelen, readlen, datalen, transfered=0;
+    ssize_t filelen, readlen, datalen, transfered;
+    int shmid;
     while(1){
-        if (msgrcv(msqid, &msg, sizeof(msg.req), 0, 0) == -1) {
+        if (msgrcv(msqid, &msg, sizeof(msg.req), 1, 0) == -1) {
             perror("msgrcv");
             exit(1);
         }
-        printf("Received request key: %s", msg.req.path);
-        cblock = (cache_p) shmat(msg.req.shmd, (void *)0, 0);
-        fd = simplecache_get(msg.req.path);
+        printf("Received request key %s with memory key %d\n", msg.req.path, msg.req.key);
+        /* connect to (and possibly create) the segment: */
+        if ((shmid = shmget(msg.req.key, msg.req.segsize, 0644 | IPC_CREAT)) == -1) {
+            perror("shmget");
+            exit(1);
+        }
+        cblock = (cache_p) shmat(shmid, (void *)0, 0);
         datalen = data_length(msg.req.segsize);
-        filelen=lseek(fd, 0, SEEK_END);
-
+        transfered = 0;
+        if((fd = simplecache_get(msg.req.path))<0){
+            filelen=-1;
+            printf("File does not exist in cache!\n");
+        }
+        else{
+            filelen=lseek(fd, 0, SEEK_END);
+            lseek(fd, 0, SEEK_SET);
+        }
+        printf("Get fd of %s with size %zd\n", msg.req.path, filelen);
         pthread_mutex_lock(&cblock->meta.m);
         while(cblock->meta.status == READABLE){
             pthread_cond_wait(&cblock->meta.writable, &cblock->meta.m);
         }
-        cblock->meta.filelen = (size_t)filelen;
-        cblock->meta.status = READABLE;
+        cblock->meta.filelen = filelen;
+        if(filelen<0){
+            cblock->meta.status=READABLE;
+        }
         pthread_mutex_unlock(&cblock->meta.m);
-        pthread_cond_signal(&cblock->meta.readable);
+        if(filelen<0){
+            pthread_cond_signal(&cblock->meta.readable);
+        }
 
+        printf("Metadata set! Starting transfer...\n");
         while(transfered<filelen){
             pthread_mutex_lock(&cblock->meta.m);
             while(cblock->meta.status == READABLE){
                 pthread_cond_wait(&cblock->meta.writable, &cblock->meta.m);
             }
             readlen = read(fd, cblock->data, (size_t)datalen);
+//            printf("Read: %.40s...\n", cblock->data);
             if (readlen <= 0){
                 fprintf(stderr, "handle_with_file read error, %zd, %zu, %zu", readlen, transfered, filelen );
-                return;
+                return NULL;
             }
             transfered += readlen;
+//            printf("Read %zd bytes, transfered %zu, filelen %zu\n", readlen, transfered, filelen);
             cblock->meta.readlen = (size_t)readlen;
             cblock->meta.status = READABLE;
             pthread_mutex_unlock(&cblock->meta.m);
             pthread_cond_signal(&cblock->meta.readable);
         }
+        printf(">>> Successfully sent cached file!\n");
+        if(shmdt(cblock)<0){
+            perror("shmdt");
+        }
+        printf(">>> Successfully detached shared memory block!\n");
     }
 }
 
 void spawn(int n){
-    pthread_t tid;
+    pthread_t tid[n];
     for (int i=0;i<n;i++){
-        pthread_create(&tid, NULL, serve_cache, NULL);
+        pthread_create(&tid[i], NULL, serve_cache, NULL);
     }
     printf("Threads spawned!\n");
+    for (int i = 0; i < n; i++)
+       pthread_join(tid[i], NULL);
 }
 
 int main(int argc, char **argv) {
@@ -150,8 +180,9 @@ int main(int argc, char **argv) {
 
 	/* Cache initialization */
 	simplecache_init(cachedir);
-
+    printf("Initialized Cache!\n");
     msqid = getmsqid();
+    printf("Got messsage quene!\n");
     spawn(nthreads);
     /* this code probably won't execute */
     if (msgctl(msqid, IPC_RMID, NULL) == -1) {

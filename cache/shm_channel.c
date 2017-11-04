@@ -4,7 +4,7 @@
 int getmsqid(){
     int msg_qid;
     key_t key;
-    if ((key = ftok("/tmp/proxy-cache-msq", 'b')) == -1) {
+    if ((key = ftok("webproxy.c", 'b')) == -1) {
         perror("ftok");
         exit(1);
     }
@@ -13,6 +13,12 @@ int getmsqid(){
         exit(1);
     }
     return msg_qid;
+}
+
+int destroy_msg(int msg_qid){
+    if(msgctl(msg_qid, IPC_RMID, NULL)==-1){
+        perror("msgctl");
+    }
 }
 
 //初始化共享内存块

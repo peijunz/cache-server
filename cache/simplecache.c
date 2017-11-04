@@ -31,7 +31,6 @@ static item_t *items;
 static int _itemcmp(const void *a, const void *b){
 	return strcmp(((item_t*) a)->key,((item_t*) b)->key);
 }
-
 int simplecache_init(char *filename){
 	FILE *filelist;
 	int capacity = 16;

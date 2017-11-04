@@ -42,14 +42,16 @@ static struct option gLongOptions[] = {
 };
 
 extern ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg);
-extern int shm_push(int shmd);
+extern int shm_push(shm_item it);
 extern void init_handlers(int);
+extern void stop_handlers();
 
 static gfserver_t gfs;
 
 static void _sig_handler(int signo){
   if (signo == SIGINT || signo == SIGTERM){
     gfserver_stop(&gfs);
+    stop_handlers();
     exit(signo);
   }
 }
@@ -135,8 +137,7 @@ int main(int argc, char **argv) {
 
 
   /* This is where you initialize your shared memory 初始化内存*/
-  key_t key;
-  int shmid;
+  shm_item it;
   char buffer[200];
   init_handlers((int)segsize);
   if (data_length(segsize)<128) {
@@ -145,17 +146,21 @@ int main(int argc, char **argv) {
   }
   for(uint i=0;i<nsegments;i++){
       /* make the key: */
-      sprintf(buffer, "/tmp/shm-proxy-%d", i);
-      if ((key = ftok(buffer, 'R')) == -1) {
+      sprintf(buffer, "shm-file-%d", i);
+      if (open(buffer, O_CREAT, 0777)==-1) {
+         perror("open");
+         exit(1);
+      }
+      if ((it.key = ftok(buffer, 'R')) == -1) {
           perror("ftok");
           exit(1);
       }
       /* connect to (and possibly create) the segment: */
-      if ((shmid = shmget(key, segsize, 0644 | IPC_CREAT)) == -1) {
+      if ((it.shmid = shmget(it.key, segsize, 0644 | IPC_CREAT)) == -1) {
           perror("shmget");
           exit(1);
       }
-      shm_push(shmid);
+      shm_push(it);
   }
   /* This is where you initialize the server struct */
   gfserver_init(&gfs, nworkerthreads);
