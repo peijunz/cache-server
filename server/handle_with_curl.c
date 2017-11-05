@@ -64,12 +64,12 @@ ssize_t handle_with_curl(gfcontext_t *ctx, char *path, void* arg) {
         fprintf(stderr, "Error happened during curl_easy_perform of header\n");
         return -1;
     }
-
     if(status >= 400) {
         gfs_sendheader(ctx, GF_FILE_NOT_FOUND, 0);
     } else {
         gfs_sendheader(ctx, GF_OK, (size_t)length);
     }
+
     curl_easy_setopt(myHandle, CURLOPT_NOBODY, 0);
     curl_easy_setopt(myHandle, CURLOPT_WRITEFUNCTION, send_chunk);
     curl_easy_setopt(myHandle, CURLOPT_WRITEDATA, (void *)ctx);
