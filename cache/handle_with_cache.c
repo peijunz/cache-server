@@ -19,24 +19,38 @@
 
 #define BUFSIZE (8803)
 
-//Replace with an implementation of handle_with_cache and any other
-//functions you may need.
+/// Message queue ID
 static int msqid = -1;
-static int segsize, blocksize;
+
+/// Segment size of each block
+static ssize_t segsize;
+
+/// Queue for shared memory blocks
 static steque_t Q;
+
+/// Mutex for Q
 static pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
+
+/// Shared memory block available
 static pthread_cond_t shm_available = PTHREAD_COND_INITIALIZER;
 
-int shm_push(int key) {
+/**
+ * @brief shm_push Add shared memory block into queue
+ * @param shmid id of block to add
+ */
+void shm_push(int shmid) {
     int* p = (int*)malloc(sizeof(int));
-    *p = key;
+    *p = shmid;
     pthread_mutex_lock(&m);
     steque_enqueue(&Q, p);
     pthread_mutex_unlock(&m);
     pthread_cond_signal(&shm_available);
-    return 0;
 }
 
+/**
+ * @brief shm_pop Get a shared memory block from queue
+ * @return shmid id of shared memory block
+ */
 int shm_pop() {
     int* p;
     int key;
@@ -51,6 +65,12 @@ int shm_pop() {
     return key;
 }
 
+/**
+ * @brief request_cache Send cache request message to cache server
+ * @param path  Path of requested file
+ * @param data_dir Unused
+ * @param shmid Shared memory id across processes
+ */
 void request_cache(char *path, char *data_dir, int shmid) {
     req_msg msg;
     msg.mtype = 1;
@@ -63,13 +83,19 @@ void request_cache(char *path, char *data_dir, int shmid) {
     }
 }
 
+/**
+ * @brief init_cache_handlers Initialization
+ * @param seg_size  Segment size for each block
+ * @param nsegments Number of segments
+ *
+ * "shm-file-%d" files are created for shared memory.
+ */
 void init_cache_handlers(int seg_size, int nsegments) {
     int shmid;
     key_t key;
     char buffer[200];
     msqid = getmsqid();
     segsize = seg_size;
-    blocksize = data_length(segsize);
     steque_init(&Q);
     for(int i = 0; i < nsegments; i++) {
         sprintf(buffer, "shm-file-%d", i);
@@ -81,14 +107,19 @@ void init_cache_handlers(int seg_size, int nsegments) {
             perror("ftok");
             exit(1);
         }
-        if((shmid = shmget(key, segsize, 0644 | IPC_CREAT)) == -1) {
+        if((shmid = shmget(key, (size_t)segsize, 0644 | IPC_CREAT)) == -1) {
             perror("shmget");
             exit(1);
         }
         shm_push(shmid);
     }
 }
-void stop_cache_handlers() {
+
+/**
+ * @brief clean_cache_handlers Cleaning all ipc resources for handlers
+ * @todo Clean tmp files
+ */
+void clean_cache_handlers() {
     int shmid;
     if(msqid != -1) {
         destroy_msg(msqid);
@@ -101,54 +132,63 @@ void stop_cache_handlers() {
     steque_destroy(&Q);
 }
 
+/**
+ * @brief handle_with_cache Handler to serve file
+ * @param ctx
+ * @param path Path of requested file
+ * @param arg Data directory
+ * @return Transfer length
+ *
+ * This is one thread for gfserver. It is responsible to read shared memory
+ * written by cache server and then send data stream to client.
+ */
 ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg) {
     //单个线程，仅仅负责读取共享内存并发送信息
     //建立一个client socket，通过它发送文件请求，然后获得文件长度信息，
     //之后一段一段的
-    ssize_t read_len, file_len, bytes_transferred, remain;
-    ssize_t write_len;
+    /// Initialization
+    ssize_t filelen, transferred=0, writelen;
     int shmid = shm_pop();
-    cache_p cblock;
-
-    cblock = (cache_p) shmat(shmid, (void *)0, 0);
-    init_cache_block(cblock);
-    printf(">>> File request %s with shmid %d\n", path, shmid);
+    cache* cp;
+    cp = init_cache_block(shmid, segsize);
     request_cache(path, (char*)arg, shmid);
+    printf(">>> File request %s with shmid %d\n", path, shmid);
 
-    pthread_mutex_lock(&cblock->meta.m);
-    while(cblock->meta.status == WRITABLE) {
-        pthread_cond_wait(&cblock->meta.readable, &cblock->meta.m);
+    /// Get file length and send header
+    pthread_mutex_lock(&cp->m);
+    while(cp->status == WRITABLE) {
+        pthread_cond_wait(&cp->readable, &cp->m);
     }
-    file_len = cblock->meta.filelen;
-    pthread_mutex_unlock(&cblock->meta.m);
-    if(file_len < 0) {
+    filelen = cp->filelen;
+    pthread_mutex_unlock(&cp->m);
+    if(filelen < 0) {
         gfs_sendheader(ctx, GF_FILE_NOT_FOUND, 0);
     } else {
-        gfs_sendheader(ctx, GF_OK, (size_t)file_len);
+        gfs_sendheader(ctx, GF_OK, (size_t)filelen);
     }
-    bytes_transferred = 0;
 
-    while(bytes_transferred < file_len) {
-        pthread_mutex_lock(&cblock->meta.m);
-        while(cblock->meta.status == WRITABLE) {
-            pthread_cond_wait(&cblock->meta.readable, &cblock->meta.m);
+    /// Read cache and transfer data until finished
+    while(transferred < filelen) {
+        pthread_mutex_lock(&cp->m);
+        while(cp->status == WRITABLE) {
+            pthread_cond_wait(&cp->readable, &cp->m);
         }
-        remain = file_len - bytes_transferred;
-        read_len = (blocksize <= remain) ? blocksize : remain;
-        write_len = gfs_send(ctx, cblock->data, (size_t)read_len);
-        if(write_len != read_len) {
+        writelen = gfs_send(ctx, cp->data, (size_t)cp->readlen);
+        if(writelen != cp->readlen) {
             fprintf(stderr, "handle_with_file write error");
             return SERVER_FAILURE;
         }
-        bytes_transferred += write_len;
-        cblock->meta.status = WRITABLE;
-        pthread_mutex_unlock(&cblock->meta.m);
-        pthread_cond_signal(&cblock->meta.writable);
+        transferred += writelen;
+        cp->status = WRITABLE;
+        pthread_mutex_unlock(&cp->m);
+        pthread_cond_signal(&cp->writable);
     }
-    if(shmdt(cblock) < 0) {
+    printf("<<< Successfully transfered file %s!\n", path);
+
+    ///Cleaning
+    if(shmdt(cp) < 0) {
         perror("shmdt:");
     }
     shm_push(shmid);
-    printf("<<< Successfully transfered file %s!\n", path);
-    return (ssize_t)bytes_transferred;
+    return (ssize_t)transferred;
 }

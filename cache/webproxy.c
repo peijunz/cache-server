@@ -43,14 +43,14 @@ static struct option gLongOptions[] = {
 
 extern ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg);
 extern void init_cache_handlers(int, int);
-extern void stop_cache_handlers(void);
+extern void clean_cache_handlers(void);
 
 static gfserver_t gfs;
 
 static void _sig_handler(int signo) {
     if(signo == SIGINT || signo == SIGTERM) {
         gfserver_stop(&gfs);
-        stop_handlers();
+        clean_cache_handlers();
         printf("Proxy killed by signal %d\n", signo);
         exit(signo);
     }
@@ -137,8 +137,8 @@ int main(int argc, char **argv) {
 
 
     /* This is where you initialize your shared memory 初始化内存*/
-    if(data_length(segsize) < 128) {
-        fprintf(stderr, "Segment size %lu smaller than metadata size %lu+128!\n", segsize, sizeof(metadata));
+    if(segsize < sizeof(cache)) {
+        fprintf(stderr, "Segment size %lu smaller than metadata size %lu+128!\n", segsize, sizeof(cache));
         exit(__LINE__);
     }
     init_cache_handlers((int)segsize, (int)nsegments);

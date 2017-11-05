@@ -8,33 +8,48 @@
 #include <sys/shm.h>
 #include <pthread.h>
 
-typedef struct{
+///Message to request cache
+typedef struct {
     long mtype;
-    struct {
-        int shmid;
-        int segsize;
-        char path[200];
+    struct {            ///< Request Information
+        ssize_t segsize;///< Shared memory segment size
+        int shmid;      ///< Shared memory id
+        char path[200]; ///< Path for requested file
     } req;
 } req_msg;
 
 #define WRITABLE 0
 #define READABLE 1
-typedef struct{
+
+typedef struct {
     pthread_mutex_t  m;
     pthread_cond_t  writable;
     pthread_cond_t  readable;
-    ssize_t filelen;
-    size_t readlen;
-    int status;
-}metadata;
+    ssize_t datalen;///< Data area length
+    ssize_t filelen;///< File length
+    ssize_t readlen;///< Data length to read this time(from data head)
+    int status;     ///< Readable or writable
+    char data[];    ///< Flexible array member used to transfer data
+} cache;
 
-typedef struct{
-    metadata meta;
-    char data[1024];
-} cache_block, *cache_p;
-
+/**
+ * @brief getmsqid Get message quene id
+ * @return Message quene id
+ */
 int getmsqid(void);
-void init_cache_block(cache_p cblock);
+
+/**
+ * @brief init_cache_block Initialize shared memory block
+ * @param shmid Shared memory id
+ * It mappes menory and then sets up mutex and conditional variables for
+ * syncronization. Also initialize cacheblock metadata.
+ */
+cache* init_cache_block(int shmid, ssize_t segsize);
+
+/**
+ * @brief destroy_msg Destroy message quene
+ * @param msqid Message quene id
+ */
 void destroy_msg(int msg_qid);
-ssize_t data_length(int segs);
+
 #endif // __SHM_CHANNEL_H__

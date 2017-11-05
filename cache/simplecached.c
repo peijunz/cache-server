@@ -23,6 +23,10 @@
 
 #define MAX_CACHE_REQUEST_LEN 8803
 static int msqid;
+/**
+ * @brief _sig_handler Destroy message queue and simple cache
+ * @param signo
+ */
 static void _sig_handler(int signo) {
     if(signo == SIGINT || signo == SIGTERM) {
         /* Unlink IPC mechanisms here*/
@@ -31,6 +35,7 @@ static void _sig_handler(int signo) {
             msqid = -1;
         }
         printf("Cache killed by signal %d\n", signo);
+        simplecache_destroy();
         exit(signo);
     }
 }
@@ -56,22 +61,23 @@ void Usage() {
     fprintf(stdout, "%s", USAGE);
 }
 
+/// Message queue ID
 static int msqid = -1;
 
-void* serve_cache(void*arg) {
+void* serve_cache(void* arg) {
     req_msg msg;
-    cache_p cblock;
+    cache* cp;
     int fd;
-    ssize_t filelen, readlen, datalen, transfered;
+    ssize_t filelen, transfered;
     while(1) {
+        /// Wait message queue for cache request
         if(msgrcv(msqid, &msg, sizeof(msg.req), 1, 0) == -1) {
             perror("msgrcv");
             exit(1);
         }
         printf(">>> Cache request %s with shmid %d\n", msg.req.path, msg.req.shmid);
-        cblock = (cache_p) shmat(msg.req.shmid, (void *)0, 0);
-        datalen = data_length(msg.req.segsize);
-        transfered = 0;
+
+        /// Initialization of file and shared memory
         if((fd = simplecache_get(msg.req.path)) < 0) {
             filelen = -1;
             printf("File does not exist in cache!\n");
@@ -79,42 +85,53 @@ void* serve_cache(void*arg) {
             filelen = lseek(fd, 0, SEEK_END);
             lseek(fd, 0, SEEK_SET);
         }
-        pthread_mutex_lock(&cblock->meta.m);
-        while(cblock->meta.status == READABLE) {
-            pthread_cond_wait(&cblock->meta.writable, &cblock->meta.m);
+        cp = (cache*) shmat(msg.req.shmid, (void *)0, 0);
+        transfered = 0;
+
+        /// Write file length into shared memory block
+        pthread_mutex_lock(&cp->m);
+        while(cp->status == READABLE) {
+            pthread_cond_wait(&cp->writable, &cp->m);
         }
-        cblock->meta.filelen = filelen;
+        cp->filelen = filelen;
         if(filelen <= 0) {
-            cblock->meta.status = READABLE;
+            cp->status = READABLE;
         }
-        pthread_mutex_unlock(&cblock->meta.m);
+        pthread_mutex_unlock(&cp->m);
         if(filelen <= 0) {
-            pthread_cond_signal(&cblock->meta.readable);
+            pthread_cond_signal(&cp->readable);
         }
+
+        /// Send cache to proxy
         while(transfered < filelen) {
-            pthread_mutex_lock(&cblock->meta.m);
-            while(cblock->meta.status == READABLE) {
-                pthread_cond_wait(&cblock->meta.writable, &cblock->meta.m);
+            pthread_mutex_lock(&cp->m);
+            while(cp->status == READABLE) {
+                pthread_cond_wait(&cp->writable, &cp->m);
             }
-            readlen = pread(fd, cblock->data, (size_t)datalen, transfered);
-            if(readlen < 0) {
-                fprintf(stderr, "handle_with_file read error, %zd, %zu, %zu", readlen, transfered, filelen);
+            cp->readlen = pread(fd, cp->data, (size_t)cp->datalen, transfered);
+            if(cp->readlen < 0) {
+                fprintf(stderr, "handle_with_file read error, %zd, %zu, %zu", cp->readlen, transfered, filelen);
                 perror("pread: ");
                 return NULL;
             }
-            transfered += readlen;
-            cblock->meta.readlen = (size_t)readlen;
-            cblock->meta.status = READABLE;
-            pthread_mutex_unlock(&cblock->meta.m);
-            pthread_cond_signal(&cblock->meta.readable);
-        }
-        if(shmdt(cblock) < 0) {
-            perror("shmdt:");
+            transfered += cp->readlen;
+            cp->status = READABLE;
+            pthread_mutex_unlock(&cp->m);
+            pthread_cond_signal(&cp->readable);
         }
         printf("<<< Successfully sent cached %s!\n", msg.req.path);
+
+        /// Detach shared memorys
+        if(shmdt(cp) < 0) {
+            perror("shmdt:");
+        }
     }
 }
 
+/**
+ * @brief spawn Spawn all threads
+ * @param n Number of children threads
+ */
 void spawn(int n) {
     pthread_t tid[n];
     for(int i = 0; i < n; i++) {
@@ -170,15 +187,10 @@ int main(int argc, char **argv) {
 
     /* Cache initialization */
     simplecache_init(cachedir);
-    printf("Initialized Cache!\n");
     msqid = getmsqid();
-    printf("Got messsage quene!\n");
     spawn(nthreads);
+
     /* this code probably won't execute */
-    if(msgctl(msqid, IPC_RMID, NULL) == -1) {
-        perror("msgctl");
-        exit(1);
-    }
     simplecache_destroy();
     return 0;
 }
