@@ -18,6 +18,7 @@
 #include "shm_channel.h"
 
 #define BUFSIZE (8803)
+#define FBUFSIZE 64
 
 /// Message queue ID
 static int msqid = -1;
@@ -34,6 +35,7 @@ static pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 /// Shared memory block available
 static pthread_cond_t shm_available = PTHREAD_COND_INITIALIZER;
 
+char shm_file_prefix[]=".shm-file";
 /**
  * @brief shm_push Add shared memory block into queue
  * @param shmid id of block to add
@@ -93,12 +95,12 @@ void request_cache(char *path, char *data_dir, int shmid) {
 void init_cache_handlers(int seg_size, int nsegments) {
     int shmid;
     key_t key;
-    char buffer[200];
+    char buffer[FBUFSIZE];
     msqid = getmsqid();
     segsize = seg_size;
     steque_init(&Q);
     for(int i = 0; i < nsegments; i++) {
-        sprintf(buffer, "shm-file-%d", i);
+        sprintf(buffer, "%s-%d", shm_file_prefix, i);
         if(open(buffer, O_CREAT, 0777) == -1) {
             perror("open");
             exit(1);
@@ -121,6 +123,7 @@ void init_cache_handlers(int seg_size, int nsegments) {
  */
 void clean_cache_handlers() {
     int shmid;
+    char buffer[FBUFSIZE];
     if(msqid != -1) {
         destroy_msg(msqid);
         msqid = -1;
@@ -129,6 +132,8 @@ void clean_cache_handlers() {
         shmid = shm_pop();
         shmctl(shmid, IPC_RMID, 0);
     }
+    sprintf(buffer, "rm %s-*", shm_file_prefix);
+    system(buffer);
     steque_destroy(&Q);
 }
 

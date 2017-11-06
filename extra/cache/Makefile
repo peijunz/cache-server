@@ -43,6 +43,6 @@ simplecached_noasan: simplecache_noasan.o simplecached_noasan.o shm_channel_noas
 clean:
 # 	mv gfserver.o gfserver.tmpo 
 # 	mv gfserver_noasan.o gfserver_noasan.tmpo
-	rm -rf *.o webproxy simplecached webproxy_noasan simplecached_noasan shm-file-*
+	rm -rf *.o webproxy simplecached webproxy_noasan simplecached_noasan .shm-file-*
 # 	mv gfserver.tmpo gfserver.o
 # 	mv gfserver_noasan.tmpo gfserver_noasan.o
