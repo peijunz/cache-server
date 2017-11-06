@@ -1,3 +1,4 @@
+gfserver.c
 gfserver.h
 handle_with_curl.c
 handle_with_file.c
@@ -5,3 +6,5 @@ proxy-student.h
 steque.c
 steque.h
 webproxy.c
+gf-student.h
+gfserver-student.h
