@@ -1,4 +1,4 @@
-/courses/ud923/filecorpus/1kb-sample-file-.png
+/courses/ud923/filecorpus/FILE_THAT_DOES_NOT_EXIST_FOR_TESING_PURPOSE
 /courses/ud923/filecorpus/1kb-sample-file-0.png
 /courses/ud923/filecorpus/1kb-sample-file-1.html
 /courses/ud923/filecorpus/1kb-sample-file-2.png
