@@ -53,26 +53,18 @@ typedef struct {
 
 + All these data are initialized by calling `init_cache_block()`
 + With `readlen`, we clearly know how much data proxy should read for a specific transfer cycle. There are some situations that `readlen` is actually smaller than `datalen`. As an example, when we are transfering the end of a file it may be less than total length of data array! 
-+ `data` is a flexible array member! Its length is stored in `datalen`, which equals to size of shared memory segment minus `sizeof(cache)`, i.e. `segsize-sizeof(cache)`.
++ `data` is a flexible array member! Its length is stored in `datalen`, which equals to size of shared memory segment minus `sizeof(cache)`, i.e. `segsize - sizeof(cache)`.
 + File length is transfered through shared memory. A negative file length means invalid request and in this case proxy shoud return `GF_FILE_NOT_FOUND`.
 + Synchronization between proxy and cache
     + `m` is lock for any data access to shared memory
     + `status` is readable or writable with corresponding readable/writable signal to inform waiting proxy/cache thread, respectively.
 
-Shared memory must have corresponding file. To solve this issue, temporary files `.shm-file-%d` are created in `init_cache_handlers()` and destroyed using `system('rm .shm-file-')` in `clean_cache_handlers()`.
+Shared memory must have corresponding file. To solve this issue, temporary files `.shm-file-%d` are created in `init_cache_handlers()` and destroyed using `system('rm .shm-file-*')` in `clean_cache_handlers()`.
 
 ### Problems
 + There is type for msg queue and 0 type never works
 + `read` function is not thread safe. It caused program to pass partially in the test "Multi-threaded Cache test with simultaneous multi-threaded downloads (mixed file sizes)". After changed it to `pread` with the extra argument set by transfered bytes, this issue is solved.
     +  The reason why `read` is unsafe. Because every call of `read` attempts to increase file offset by the number of bytes read. If multiple threads are operating the same file descriptor, race condition happens.
-
-## Project Description
-We will manually review your file looking for:
-
-- A summary description of your project design.  If you wish to use grapics, please simply use a URL to point to a JPG or PNG file that we can review
-
-- Any additional observations that you have about what you've done. Examples:
-	- __What created problems for you?__
 
 ## Known Limitations
 

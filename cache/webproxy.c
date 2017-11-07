@@ -13,7 +13,7 @@
 #include <sys/shm.h>
 #include "shm_channel.h"
 #include "gfserver.h"
-#include "proxy-student.h"
+// #include "proxy-student.h"
 
 /* note that the -n and -z parameters are NOT used for Part 1 */
 /* they are only used for Part 2 */

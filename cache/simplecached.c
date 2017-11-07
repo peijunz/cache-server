@@ -13,7 +13,7 @@
 #include <sys/msg.h>
 
 #include "gfserver.h"
-#include "proxy-student.h"
+// #include "proxy-student.h"
 #include "shm_channel.h"
 #include "simplecache.h"
 
@@ -80,7 +80,7 @@ void* serve_cache(void* arg) {
         /// Initialization of file and shared memory
         if((fd = simplecache_get(msg.req.path)) < 0) {
             filelen = -1;
-            printf("File does not exist in cache!\n");
+            printf("File %s not in cache!\n", msg.req.path);
         } else {
             filelen = lseek(fd, 0, SEEK_END);
             lseek(fd, 0, SEEK_SET);
@@ -119,7 +119,7 @@ void* serve_cache(void* arg) {
             pthread_mutex_unlock(&cp->m);
             pthread_cond_signal(&cp->readable);
         }
-        printf("<<< Successfully sent cached %s!\n", msg.req.path);
+        printf("<<< Completed cache task for %s!\n", msg.req.path);
 
         /// Detach shared memorys
         if(shmdt(cp) < 0) {
