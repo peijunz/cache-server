@@ -25,12 +25,17 @@ typedef struct {
     } req;
 } req_msg;
 ```
-The only information passed through message queue is shared memory information and path of request. It is an one-way message queue sending request from proxy to cache without any response through message queue from cache. Important information such as validity of request and length of requested file is sent through data channel---shared memory.
+The only information passed through message queue is shared memory information and path of request. It is an **one-way** message queue: proxy only send request and cache only accept request. Important information such as existence and length of requested file is transfered through data channel---shared memory. `request_cache()` in `handle_with_cache.c` is utility function to send cache request.
 
-The message queue can be created by either process at its initialization. If any process is killed, it will destroy the message queue and the other process will also exit right after any call of `msgrcv` or `msgsnd`.
+The message queue can be created by either process at its initialization by calling `getmsqid()`. If any process is killed, it will destroy the message queue by `destroy_msg()` and the other process will also exit right after any call of `msgrcv()` or `msgsnd()`. 
+
+If the `simplecached` process is killed before `webproxy`, it won't exit until the beginning of another request. This issue is hard to solve because the handler function is not called until arrival of new request. A possible solution may be adding a watchdog thread which regularly check goodness of message queue and determine exit or not. In comparison, if webproxy is killed first then `simplecached` will exit instantly.
 
 ### Data Channel
-The data channel is required to be implemented by shared memory, which is most efficient across IPCs for sending large files. As suggested by the original readme file, I create a pool of shared memory descriptors, which are pushed into a queue of free shared memory descriptors. Synchronization is necessary for this queue, because there is data race when different threads are trying to get shared memory at the same time. To deal with this problem, I have used a mutex to lock the acess of queue, as well as condition variable `shm_available` to notify new available share memory.
+The data channel is required to be implemented by shared memory, which is most efficient across IPCs for sending large files. As suggested by the original readme file, I create a pool of shared memory descriptors, which are pushed into a queue of free shared memory descriptors. 
+To manage resources in this queue, shared memory segments can be allocated by `shm_pop()` and appended/returned by `shm_push()`
+
+Synchronization is necessary for this queue, because there is data race when different threads are trying to get shared memory at the same time. To deal with this problem, I have used a mutex to lock the acess of queue, as well as condition variable `shm_available` to notify new available share memory.
 
 The head of shared memory are synchronization variables, data length information, and transfer information including file length and read length . 
 ```c
@@ -45,6 +50,8 @@ typedef struct {
     char data[];    ///< Flexible array member used to transfer data
 } cache;
 ```
+
++ All these data are initialized by calling `init_cache_block()`
 + With `readlen`, we clearly know how much data proxy should read for a specific transfer cycle. There are some situations that `readlen` is actually smaller than `datalen`. As an example, when we are transfering the end of a file it may be less than total length of data array! 
 + `data` is a flexible array member! Its length is stored in `datalen`, which equals to size of shared memory segment minus `sizeof(cache)`, i.e. `segsize-sizeof(cache)`.
 + File length is transfered through shared memory. A negative file length means invalid request and in this case proxy shoud return `GF_FILE_NOT_FOUND`.
@@ -52,12 +59,12 @@ typedef struct {
     + `m` is lock for any data access to shared memory
     + `status` is readable or writable with corresponding readable/writable signal to inform waiting proxy/cache thread, respectively.
 
+Shared memory must have corresponding file. To solve this issue, temporary files `.shm-file-%d` are created in `init_cache_handlers()` and destroyed using `system('rm .shm-file-')` in `clean_cache_handlers()`.
 
 ### Problems
 + There is type for msg queue and 0 type never works
-+ fogot to reset offset for fd
 + `read` function is not thread safe. It caused program to pass partially in the test "Multi-threaded Cache test with simultaneous multi-threaded downloads (mixed file sizes)". After changed it to `pread` with the extra argument set by transfered bytes, this issue is solved.
-    +  Why is `read` unsafe? Because every call of `read` attempts to increase file offset by the number of bytes read. If multiple threads are operating the same file descriptor, race condition happens.
+    +  The reason why `read` is unsafe. Because every call of `read` attempts to increase file offset by the number of bytes read. If multiple threads are operating the same file descriptor, race condition happens.
 
 ## Project Description
 We will manually review your file looking for:
@@ -66,15 +73,13 @@ We will manually review your file looking for:
 
 - Any additional observations that you have about what you've done. Examples:
 	- __What created problems for you?__
-	- __What tests would you have added to the test suite?__
-	- __If you were going to do this project again, how would you improve it?__
-	- __If you didn't think something was clear in the documentation, what would you write instead?__
 
-## Known Bugs/Issues/Limitations
+## Known Limitations
 
-__Please tell us what you know doesn't work in this submission__
+If the cache server is killed when doing some transferring task, it may not delete shared memory resource taken by other threads. Because I am actually deleting all shared memory in the available shared memory queue, those unavailable ones will not be deleted. Improvement may be done by adding another static shared memory resource queue as an global inventory. 
 
 ## References
-
-__Please include references to any external materials that you used in your project__
++ [Beej's Guide to Unix IPC](http://beej.us/guide/bgipc/output/html/multipage/index.html)
+    + [Message Queues](http://beej.us/guide/bgipc/output/html/multipage/mq.html)
+    + [Shared Memory Segments](http://beej.us/guide/bgipc/output/html/multipage/shm.html)
 
