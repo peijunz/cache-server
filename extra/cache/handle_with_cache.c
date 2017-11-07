@@ -168,6 +168,7 @@ ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg) {
     pthread_mutex_unlock(&cp->m);
     if(filelen < 0) {
         gfs_sendheader(ctx, GF_FILE_NOT_FOUND, 0);
+        printf("File %s not found!\n", path);
     } else {
         gfs_sendheader(ctx, GF_OK, (size_t)filelen);
     }
@@ -188,7 +189,7 @@ ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg) {
         pthread_mutex_unlock(&cp->m);
         pthread_cond_signal(&cp->writable);
     }
-    printf("<<< Successfully transfered file %s!\n", path);
+    printf("<<< Task done: %s!\n", path);
 
     ///Cleaning
     if(shmdt(cp) < 0) {

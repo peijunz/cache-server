@@ -136,7 +136,6 @@ void gfserver_serve(gfserver_t *gfh){
             gfs_abort(ctx);
         }
         else{
-            printf("Received request %s\n", path);
             add_task(gfh, ctx, path);
         }
     }
