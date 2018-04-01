@@ -14,7 +14,7 @@
 #include <sys/shm.h>
 
 #include "gfserver.h"
-// #include "proxy-student.h"
+#include "proxy-student.h"
 #include "shm_channel.h"
 
 #define BUFSIZE (8803)
