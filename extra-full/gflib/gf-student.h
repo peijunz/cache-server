@@ -28,6 +28,7 @@ ssize_t rio_writen(int fd, char* buf, size_t n){
     return (ssize_t)n;
 }
 
+
 ssize_t rio_readn(int fd, char* buf, size_t n){
     size_t rem = n;
     ssize_t nread;
@@ -45,6 +46,8 @@ ssize_t rio_readn(int fd, char* buf, size_t n){
     }
     return (ssize_t)(n-rem);
 }
+
+
 int readheader(int fd, char* buf){
     char delim[]="\r\n\r\n";
     int next=0;
