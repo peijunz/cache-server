@@ -14,7 +14,7 @@
 #include <sys/shm.h>
 
 #include "gfserver.h"
-#include "proxy-student.h"
+// #include "proxy-student.h"
 #include "shm_channel.h"
 
 #define BUFSIZE (8803)
@@ -168,7 +168,6 @@ ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg) {
     pthread_mutex_unlock(&cp->m);
     if(filelen < 0) {
         gfs_sendheader(ctx, GF_FILE_NOT_FOUND, 0);
-        printf("File %s not found!\n", path);
     } else {
         gfs_sendheader(ctx, GF_OK, (size_t)filelen);
     }
@@ -189,7 +188,7 @@ ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg) {
         pthread_mutex_unlock(&cp->m);
         pthread_cond_signal(&cp->writable);
     }
-    printf("<<< Task done: %s!\n", path);
+    printf("<<< Successfully transfered file %s!\n", path);
 
     ///Cleaning
     if(shmdt(cp) < 0) {

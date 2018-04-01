@@ -1,16 +1,12 @@
 # Extra Credit Part for Project 3
-## Intructions to Compile and Run
-```bash
-cd cache #Working directory
-make
-./webproxy
-#Then, in a different shell
-./simple_cached
-#And still in a different shell
-./gfclient_download
-```
+## Structure of Contents
++ `gflib` comes from project 1 with some adaptations. It is 
+    + `gfserver` library now supports multithreading inherently.
++ `mtgf` has the `gfserver_main` and `gfclient_download`.
++ `server` folder is part 1 of project 3
++ `cache` folder is part 2 of project 3
 
-## Notes
-Multithreading support is now implemented in `gfserver` library. It has almost the same API with `gfserver.h` provided in project 3. Consequently the code from PR3 does not need to be changed at all.
+# How to Compile
+run `make` in root directory, it will compile `mtgf`, `server`, `server`
 
-No change is made to `gfclient` library. Multithreading of `gfclient_download` is implemented in `gfclient_download.c`
+# What to Run?

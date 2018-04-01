@@ -12,7 +12,7 @@
 #include <curl/curl.h>
 
 #include "gfserver.h"
-#include "proxy-student.h"
+// #include "proxy-student.h"
 
 #define MAX_KEYLEN 1024
 
