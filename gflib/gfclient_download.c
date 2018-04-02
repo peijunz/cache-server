@@ -169,6 +169,38 @@ void spawn(int n){
     printf("Threads spawned!\n");
 }
 
+void gfclient_download(char *server, int port, char *req_path, char *local_path){
+    size_t l=strlen(req_path)+1;
+    //Pack data into quene
+    item *it=(item*)malloc(sizeof (item));
+    it->server=server;
+    it->port=port;
+    it->req_path=(char*)malloc(l);
+    strncpy(it->req_path, req_path, l);
+    l = strlen(local_path)+1;
+    it->local_path=(char*)malloc(l);
+    strncpy(it->local_path, local_path, l);
+
+    pthread_mutex_lock(&m);
+    steque_enqueue(&Q, it);
+    busy++;
+    pthread_mutex_unlock(&m);
+
+    pthread_cond_signal(&task);
+}
+
+// Wait until not busy
+void gfclient_join(){
+  pthread_mutex_lock(&m);
+  while(busy){
+      pthread_cond_wait(&done, &m);
+  }
+  pthread_mutex_unlock(&m);
+
+  gfc_global_cleanup();
+  steque_destroy(&Q);
+}
+
 /* Main ========================================================= */
 int main(int argc, char **argv) {
 /* COMMAND LINE OPTIONS ============================================= */
@@ -228,36 +260,12 @@ int main(int argc, char **argv) {
       fprintf(stderr, "Request path exceeded maximum of 256 characters\n.");
       exit(EXIT_FAILURE);
     }
-
     localPath(req_path, local_path);
-    //Pack data into quene
-    item *it=(item*)malloc(sizeof (item));
-    it->server=server;
-    it->port=port;
-    it->req_path=(char*)malloc(l+1);
-    strncpy(it->req_path, req_path, l+1);
-    it->local_path=(char*)malloc(sizeof(local_path));
-    strncpy(it->local_path, local_path, sizeof(local_path));
-
-    pthread_mutex_lock(&m);
-    steque_enqueue(&Q, it);
-    busy++;
-    pthread_mutex_unlock(&m);
-
-    pthread_cond_signal(&task);
-
+    gfclient_download(server, port, req_path, local_path);
   }
   printf("Quene Initialized\n");
 
-  // Wait until not busy
-  pthread_mutex_lock(&m);
-  while(busy){
-      pthread_cond_wait(&done, &m);
-  }
-  pthread_mutex_unlock(&m);
-
-  gfc_global_cleanup();
-  steque_destroy(&Q);
+  gfclient_join();
 
   exit(0);//Kill all threads
 }  

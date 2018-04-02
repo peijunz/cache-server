@@ -35,4 +35,4 @@ gfclient_download_noasan: gfclient.o workload_noasan.o gfclient_download_noasan.
 .PHONY: clean
 
 clean:
-	rm -fr *.o gfserver_main gfclient_download gfserver_main_noasan gfclient_download_noasan
+	rm -fr *.o gfserver_main gfclient_download gfserver_main_noasan gfclient_download_noasan courses/
