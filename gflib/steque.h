@@ -3,16 +3,16 @@
 
 typedef void* steque_item;
 
-typedef struct steque_node_t{
-  steque_item item;
-  struct steque_node_t* next;
+typedef struct steque_node_t {
+    steque_item item;
+    struct steque_node_t* next;
 } steque_node_t;
 
-typedef struct{
-  steque_node_t* front;
-  steque_node_t* back;
-  int N;
-}steque_t;
+typedef struct {
+    steque_node_t* front;
+    steque_node_t* back;
+    int N;
+} steque_t;
 
 
 /* Initializes the data structure */

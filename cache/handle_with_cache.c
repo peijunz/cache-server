@@ -35,7 +35,7 @@ static pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 /// Shared memory block available
 static pthread_cond_t shm_available = PTHREAD_COND_INITIALIZER;
 
-char shm_file_prefix[]=".shm-file";
+char shm_file_prefix[] = ".shm-file";
 /**
  * @brief shm_push Add shared memory block into queue
  * @param shmid id of block to add
@@ -152,7 +152,7 @@ ssize_t handle_with_cache(gfcontext_t *ctx, char *path, void* arg) {
     //建立一个client socket，通过它发送文件请求，然后获得文件长度信息，
     //之后一段一段的
     /// Initialization
-    ssize_t filelen, transferred=0, writelen;
+    ssize_t filelen, transferred = 0, writelen;
     int shmid = shm_pop();
     cache* cp;
     cp = init_cache_block(shmid, segsize);
