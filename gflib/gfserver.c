@@ -27,57 +27,73 @@ typedef struct item{
     gfcontext_t *ctx;
 } item;
 
+typedef struct thread_arg_t{
+    gfserver_t *gfs;
+    int id;
+} thread_arg_t;
+
 void gfs_abort(gfcontext_t *ctx){
     close(ctx->connfd);
     free(ctx);
 }
 
 void *thread(void* arg){//Worker
-    gfserver_t *gfh = arg;
+    //Unpack arguments
+    thread_arg_t *targ = arg;
+    gfserver_t *gfs = targ->gfs;
+    int id = targ->id;
+    free(targ);
+    printf("Thread %d started with gfs argument at address %p\n", id, gfs->args[id]);
+
+    //Start tasks
     item *it;
     pthread_detach(pthread_self());
     while(1){
-        pthread_mutex_lock(&gfh->m);
-        while(steque_isempty(&gfh->Q)){
-            pthread_cond_wait(&gfh->nonempty, &gfh->m);
+        pthread_mutex_lock(&gfs->m);
+        while(steque_isempty(&gfs->Q)){
+            pthread_cond_wait(&gfs->nonempty, &gfs->m);
         }
-        it=steque_pop(&gfh->Q);
-        pthread_mutex_unlock(&gfh->m);
-        gfh->handler(it->ctx, it->path, gfh->args[0]);
+        it=steque_pop(&gfs->Q);
+        pthread_mutex_unlock(&gfs->m);
+        gfs->handler(it->ctx, it->path, gfs->args[id]);
         gfs_abort(it->ctx);
         free(it->path);
         free(it);
     }
 }
 
-void spawn_workers(gfserver_t *gfh){
+void spawn_workers(gfserver_t *gfs){
     pthread_t tid;
-    for (int i=0;i<gfh->nthreads;i++){
-        pthread_create(&tid, NULL, thread, gfh);
+    thread_arg_t *targ=NULL;
+    for (int i=0;i<gfs->nthreads;i++){
+        targ = (thread_arg_t *)malloc(sizeof(thread_arg_t));
+        targ->gfs = gfs;
+        targ->id = i;
+        pthread_create(&tid, NULL, thread, targ);
     }
 }
 
-void gfserver_init(gfserver_t *gfh, int nthreads){
-    steque_init(&gfh->Q);
-    pthread_mutex_init(&gfh->m, NULL);
-    pthread_cond_init(&gfh->nonempty, NULL);
-    gfh->nthreads=nthreads;
-    gfh->args=(void**)malloc(sizeof (void*)*nthreads);
-    gfh->maxnpending=0;
-    gfh->port=0;
+void gfserver_init(gfserver_t *gfs, int nthreads){
+    steque_init(&gfs->Q);
+    pthread_mutex_init(&gfs->m, NULL);
+    pthread_cond_init(&gfs->nonempty, NULL);
+    gfs->nthreads=nthreads;
+    gfs->args=(void**)malloc(sizeof (void*)*nthreads);
+    gfs->maxnpending=0;
+    gfs->port=0;
 }
 
-ssize_t add_task(gfserver_t *gfh, gfcontext_t *ctx, char *path){//BOSS
+ssize_t add_task(gfserver_t *gfs, gfcontext_t *ctx, char *path){//BOSS
     item *it=(item*)malloc(sizeof (item));
     char *path_t=(char *)malloc(strlen(path)+1);//Path for thread
     strcpy(path_t, path);
     it->ctx=ctx;
     it->path=path_t;
-    pthread_mutex_lock(&gfh->m);
-    steque_enqueue(&gfh->Q, it);
-    pthread_mutex_unlock(&gfh->m);
+    pthread_mutex_lock(&gfs->m);
+    steque_enqueue(&gfs->Q, it);
+    pthread_mutex_unlock(&gfs->m);
 
-    pthread_cond_signal(&gfh->nonempty);
+    pthread_cond_signal(&gfs->nonempty);
     return 0;
 }
 
@@ -93,7 +109,7 @@ int parse_head(char *head, char *path){
     }
     return -1;
 }
-void gfserver_serve(gfserver_t *gfh){
+void gfserver_serve(gfserver_t *gfs){
     int listenfd, optval=1;
     struct sockaddr_in client_addr, server_addr;
     unsigned int clientlen;
@@ -110,18 +126,18 @@ void gfserver_serve(gfserver_t *gfh){
     bzero((char *) &server_addr, sizeof(server_addr));//Clear server addr
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_port = htons(gfh->port);
+    server_addr.sin_port = htons(gfs->port);
     if (bind(listenfd, (void *)&server_addr, sizeof(server_addr)) <0){
         fprintf(stderr, "%s @ %d: socket error\n", __FILE__, __LINE__);
         return;
     }
-    if (listen(listenfd, gfh->maxnpending)<0){
+    if (listen(listenfd, gfs->maxnpending)<0){
         fprintf(stderr, "%s @ %d: socket error\n", __FILE__, __LINE__);
         return;
     }
 
-    spawn_workers(gfh);
-    printf("Workers spawned. Listening localhost:%d...\n", gfh->port);
+    spawn_workers(gfs);
+    printf("Workers spawned. Listening localhost:%d...\n", gfs->port);
     while (1) {
         clientlen = sizeof(client_addr);
         if((ctx = (gfcontext_t *)malloc(sizeof(gfcontext_t)))==NULL){
@@ -137,7 +153,7 @@ void gfserver_serve(gfserver_t *gfh){
         }
         else{
             printf("Received request %s\n", path);
-            add_task(gfh, ctx, path);
+            add_task(gfs, ctx, path);
         }
     }
 }
@@ -164,37 +180,37 @@ ssize_t gfs_sendheader(gfcontext_t *ctx, gfstatus_t status, size_t file_len){
     return gfs_send(ctx, buf, strlen(buf));
 }
 
-void gfserver_stop(gfserver_t *gfh){
+void gfserver_stop(gfserver_t *gfs){
     item* it;
-    pthread_mutex_lock(&gfh->m);
-    while(steque_size(&gfh->Q)){
-        it=steque_pop(&gfh->Q);
+    pthread_mutex_lock(&gfs->m);
+    while(steque_size(&gfs->Q)){
+        it=steque_pop(&gfs->Q);
         gfs_abort(it->ctx);
         free(it->path);
         free(it);
     }
-    pthread_mutex_unlock(&gfh->m);
-    free(gfh->args);
+    pthread_mutex_unlock(&gfs->m);
+    free(gfs->args);
 }
 
 
-void gfserver_setopt(gfserver_t *gfh, gfserver_option_t option, ...){
+void gfserver_setopt(gfserver_t *gfs, gfserver_option_t option, ...){
     va_list vl;
     int i;
     va_start(vl, option);
     switch (option) {
     case GFS_PORT:
-        gfh->port = va_arg(vl, unsigned);
+        gfs->port = va_arg(vl, unsigned);
         break;
     case GFS_MAXNPENDING:
-        gfh->maxnpending = va_arg(vl, int);
+        gfs->maxnpending = va_arg(vl, int);
         break;
     case GFS_WORKER_FUNC:
-        gfh->handler = va_arg(vl, handler_t);
+        gfs->handler = va_arg(vl, handler_t);
         break;
     case GFS_WORKER_ARG:
         i = va_arg(vl, int);
-        gfh->args[i] = va_arg(vl, void*);
+        gfs->args[i] = va_arg(vl, void*);
         break;
     }
     va_end(vl);

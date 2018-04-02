@@ -49,7 +49,7 @@ typedef enum{
 /* 
  * Initializes the input gfserver_t object to use nthreads.
  */
-void gfserver_init(gfserver_t *gfh, int nthreads);
+void gfserver_init(gfserver_t *gfs, int nthreads);
 
 /* 
  * Sets options for the gfserver_t object. The table below
@@ -90,7 +90,7 @@ void gfserver_init(gfserver_t *gfh, int nthreads);
  *						thread.
  *						
  */
-void gfserver_setopt(gfserver_t *gfh, gfserver_option_t option, ...);
+void gfserver_setopt(gfserver_t *gfs, gfserver_option_t option, ...);
 /*
  * Starts the server.  Does not return.
  */
@@ -99,7 +99,7 @@ void gfserver_serve(gfserver_t *gfs);
 /*
  * Shuts down the server associated with the input gfserver_t object.  
  */
-void gfserver_stop(gfserver_t *gfh);
+void gfserver_stop(gfserver_t *gfs);
 
 /*
  * Sends to the client the Getfile header containing the appropriate 
